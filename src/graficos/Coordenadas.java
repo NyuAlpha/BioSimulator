@@ -4,10 +4,12 @@ public class Coordenadas {
 
 	private int x;
 	private int y;
+	private int z;	
 	
-	public Coordenadas(int x, int y ) {
+	public Coordenadas(int x, int y ,int z) {
 		this.x = x;
 		this.y = y;
+		this.z = z;
 	}
 
 	public int getX() {
@@ -18,8 +20,12 @@ public class Coordenadas {
 		return y;
 	}
 	
+	public int getZ() {
+		return z;
+	}
+	
 	public String toString() {
-		return x + "-" + y;
+		return x + "-" + y + "-" + z;
 	}
 	
 	public double calcularDistancia(Coordenadas coordenadas) {

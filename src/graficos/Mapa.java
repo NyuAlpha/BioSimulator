@@ -24,23 +24,30 @@ public class Mapa {
 	private BufferedImage imagenMapa;
 	//Anchura y altura del mapa
 	private int ancho;
-	private int alto;
+	private int largo;
+	
+	//Capas posibles de las coordenadas de Z
+	public static final int CAPA_BASE = 0;
+	public static final int CAPA_VEGETAL = 1;
+	public static final int CAPA_ANIMAL = 2;
+	private static final int CAPAS_TOTALES = 3;
 	
 	/**
 	 * Crea un mapa con un ancho y un alto de tiles o celdas
 	 * @param ancho - anchura del mapa en tiles o celdas
-	 * @param alto - altura del mapa en tiles o celdas
+	 * @param largo - altura del mapa en tiles o celdas
 	 */
-	public Mapa(int ancho, int alto) {
+	public Mapa(int ancho, int largo) {
 		
 		this.ancho = ancho;
-		this.alto = alto;
+		this.largo = largo;
 		
 		fabricaTiles = new FabricaTiles();
 		int anchuraPixeles =  ancho * FabricaTiles.LADO_TILE ;
-		int alturaPixeles = alto * FabricaTiles.LADO_TILE ;
+		int alturaPixeles = largo * FabricaTiles.LADO_TILE ;
 		imagenMapa = new BufferedImage(anchuraPixeles, alturaPixeles, BufferedImage.TYPE_INT_RGB);
 		
+		//se resetea el mapa al crearlo
 		reset();
 	}
 	
@@ -62,32 +69,32 @@ public class Mapa {
 		return false;
 	}
 	
-	public void moverActor(Actor actor, Coordenadas coordenadasViejas , Coordenadas coordenadasNuevas , int capa) {
-		campo[coordenadasViejas.getX()][coordenadasViejas.getY()][capa] = null;
-		campo[coordenadasNuevas.getX()][coordenadasNuevas.getY()][capa] = actor;
+	public void moverActor(Actor actor, Coordenadas coordenadasViejas , Coordenadas coordenadasNuevas , int posZ) {
+		campo[coordenadasViejas.getX()][coordenadasViejas.getY()][posZ] = null;
+		campo[coordenadasNuevas.getX()][coordenadasNuevas.getY()][posZ] = actor;
 	}
 	
 	public void moverActor(Actor actor,int posicionX ,int posicionY) {
-		int capa = actor.getCapa();
-		campo[actor.getCoordenadas().getX()][actor.getCoordenadas().getY()][capa] = null;
-		campo[posicionX][posicionY][capa] = actor;
+		int posZ = actor.getCoordenadas().getZ();
+		campo[actor.getCoordenadas().getX()][actor.getCoordenadas().getY()][posZ] = null;
+		campo[posicionX][posicionY][posZ] = actor;
 	}
 	
 	public void moverActorA(Actor actor,int direccionX ,int direccionY) {
 		int posX = actor.getCoordenadas().getX();
 		int posY = actor.getCoordenadas().getY();
-		int capa = actor.getCapa();
-		campo[posX][posY][capa] = null;
-		campo[posX + direccionX][posY + direccionY][capa] = actor;
+		int posZ = actor.getCoordenadas().getZ();
+		campo[posX][posY][posZ] = null;
+		campo[posX + direccionX][posY + direccionY][posZ] = actor;
 	}
 	
-	public void putActor(Actor actor, Coordenadas coordenadas , int capa) {
-		campo[coordenadas.getX()][coordenadas.getY()][capa] = actor;
+	public void putActor(Actor actor, Coordenadas coordenadas) {
+		campo[coordenadas.getX()][coordenadas.getY()][coordenadas.getZ()] = actor;
 	}
 	
 	public void eliminarActor(Actor actor) {
 		Coordenadas coordenadas = actor.getCoordenadas();
-		campo[coordenadas.getX()][coordenadas.getY()][actor.getCapa()] = null;
+		campo[coordenadas.getX()][coordenadas.getY()][actor.getCoordenadas().getZ()] = null;
 	}
 	
 	
@@ -104,13 +111,12 @@ public class Mapa {
 	 */
 	public void actualizarMapa() {
 		actores = new ArrayList<>();
-		int capaAnimal = 2;
-		int capaVegetal = 1;
+
 		for(int x = 0 ; x < ancho ; x++) {
-			for(int y = 0 ; y < alto ; y++) {
+			for(int y = 0 ; y < largo ; y++) {
 				dibujarCelda(x,y,fabricaTiles.TIERRA,false);
-				Actor planta = getActor(x, y ,capaVegetal);
-				Actor animal = getActor(x, y,capaAnimal);
+				Actor planta = getActor(x, y ,CAPA_VEGETAL);
+				Actor animal = getActor(x, y,CAPA_ANIMAL);
 				if(planta != null) {
 					dibujarCelda(x,y,fabricaTiles.HIERBA,false);
 					actores.add(planta);
@@ -155,7 +161,7 @@ public class Mapa {
 	}
 
 	public int getAlto() {
-		return alto;
+		return largo;
 	}
 
 	/**
@@ -167,7 +173,7 @@ public class Mapa {
 	}
 	
 	public void reset() {
-		campo = new Actor[ancho][alto][3];
+		campo = new Actor[ancho][largo][CAPAS_TOTALES];
 		actualizarMapa();
 	}
 }

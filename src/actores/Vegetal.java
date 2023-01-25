@@ -12,7 +12,6 @@ public class Vegetal extends Actor {
 	
 	public Vegetal(Mapa mapa, Coordenadas coordenadas) {
 		super(mapa, coordenadas);
-		capa = 1;
 		masa = 50;
 		indiceCrecimiento = 0.02; //2%
 		tamanno = Math.sqrt(masa);
@@ -21,7 +20,7 @@ public class Vegetal extends Actor {
 		fotosintesis = 0.03;
 		
 		techoVital = 100;
-		mapa.putActor(this,coordenadas,capa);
+		mapa.putActor(this,coordenadas);
 	}
 
 	@Override
@@ -41,8 +40,8 @@ public class Vegetal extends Actor {
 				int xObjetivo = coordenadas.getX() + i;
 				int yObjetivo = coordenadas.getY() + j;
 				if( !(xObjetivo < 0 || xObjetivo >= mapa.getAncho() || yObjetivo < 0 || yObjetivo >= mapa.getAlto())) {
-					if(mapa.isLibre(xObjetivo,yObjetivo,capa)) {
-						Coordenadas libre = new Coordenadas(xObjetivo,yObjetivo);
+					if(mapa.isLibre(xObjetivo,yObjetivo,coordenadas.getZ())) {
+						Coordenadas libre = new Coordenadas(xObjetivo,yObjetivo,coordenadas.getZ());
 						coordenadasLibres.add(libre);
 					}
 				}

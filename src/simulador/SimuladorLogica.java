@@ -64,7 +64,8 @@ public class SimuladorLogica implements Runnable
 	
 	
 	private synchronized void iterar() {
-		int medidor = 0;
+		int medidorAnimales = 0;
+		int medidorVegetales = 0;
 		Iterator <Actor> it =mapa.getListaActores().iterator();
 		while(it.hasNext()) {
 			Actor actor = it.next();
@@ -77,11 +78,12 @@ public class SimuladorLogica implements Runnable
 				if(actor.getMarcar()) {
 					outputConsola.append(actor.getEstado());
 				}
-				medidor++;
+				medidorAnimales++;
 			}
+			else {medidorVegetales++;}
 		}
 		mapa.actualizarMapa();
-		outputConsola.append("\n Fin de iteración nº " + ++iteracion +"  Población animales = " + medidor + "\n");
+		outputConsola.append("\n Fin de iteración nº " + ++iteracion +"  Pobl A/V = " + medidorAnimales +"|"+ medidorVegetales + "\n");
 		GUI.redibujar();
 	}
 	
@@ -148,37 +150,38 @@ public class SimuladorLogica implements Runnable
 	}
 	
 	private void crearActores() {
-		new Animal(mapa,new Coordenadas(11,20),Animal.HERVIVORO);
-		new Animal(mapa,new Coordenadas(20,30),Animal.HERVIVORO);
-		new Animal(mapa,new Coordenadas(23,37),Animal.HERVIVORO);
-		new Animal(mapa,new Coordenadas(15,40),Animal.HERVIVORO);
-		new Animal(mapa,new Coordenadas(1,21),Animal.HERVIVORO);
-		new Animal(mapa,new Coordenadas(25,31),Animal.HERVIVORO);
+		new Animal(mapa,new Coordenadas(11,20,Mapa.CAPA_ANIMAL),Animal.HERVIVORO);
+		new Animal(mapa,new Coordenadas(20,30,Mapa.CAPA_ANIMAL),Animal.HERVIVORO);
+		new Animal(mapa,new Coordenadas(23,37,Mapa.CAPA_ANIMAL),Animal.HERVIVORO);
+		new Animal(mapa,new Coordenadas(15,40,Mapa.CAPA_ANIMAL),Animal.HERVIVORO);
+		new Animal(mapa,new Coordenadas(1,21,Mapa.CAPA_ANIMAL),Animal.HERVIVORO);
+		new Animal(mapa,new Coordenadas(25,31,Mapa.CAPA_ANIMAL),Animal.HERVIVORO);	
+		new Animal(mapa,new Coordenadas(55,43,Mapa.CAPA_ANIMAL),Animal.HERVIVORO);
+		new Animal(mapa,new Coordenadas(62,57,Mapa.CAPA_ANIMAL),Animal.HERVIVORO);
+		new Animal(mapa,new Coordenadas(70,60,Mapa.CAPA_ANIMAL),Animal.HERVIVORO);
 		
-		new Animal(mapa,new Coordenadas(55,43),Animal.HERVIVORO);
-		new Animal(mapa,new Coordenadas(62,57),Animal.HERVIVORO);
-		new Animal(mapa,new Coordenadas(70,60),Animal.HERVIVORO);
-		new Vegetal(mapa,new Coordenadas(70,50));
-		new Vegetal(mapa,new Coordenadas(60,70));
-		new Vegetal(mapa,new Coordenadas(50,60));
-		new Vegetal(mapa,new Coordenadas(15,25));
-		new Vegetal(mapa,new Coordenadas(40,40));
-		new Vegetal(mapa,new Coordenadas(17,22));
-		new Vegetal(mapa,new Coordenadas(10,9));
-		new Vegetal(mapa,new Coordenadas(18,22));
-		new Vegetal(mapa,new Coordenadas(10,12));
-		new Vegetal(mapa,new Coordenadas(10,6));
-		new Vegetal(mapa,new Coordenadas(24,22));
-		new Vegetal(mapa,new Coordenadas(15,12));
-		new Vegetal(mapa,new Coordenadas(2,22));
-		new Vegetal(mapa,new Coordenadas(15,3));
-		new Vegetal(mapa,new Coordenadas(12,22));
-		new Vegetal(mapa,new Coordenadas(5,12));
-		new Vegetal(mapa,new Coordenadas(22,7));
-		new Vegetal(mapa,new Coordenadas(8,32));
-		new Vegetal(mapa,new Coordenadas(9,9));
-		new Vegetal(mapa,new Coordenadas(0,0));
-		new Animal(mapa,new Coordenadas(35,35),Animal.CARNIVORO);
+		new Vegetal(mapa,new Coordenadas(70,50,Mapa.CAPA_VEGETAL));
+		new Vegetal(mapa,new Coordenadas(60,70,Mapa.CAPA_VEGETAL));
+		new Vegetal(mapa,new Coordenadas(50,60,Mapa.CAPA_VEGETAL));
+		new Vegetal(mapa,new Coordenadas(15,25,Mapa.CAPA_VEGETAL));
+		new Vegetal(mapa,new Coordenadas(40,40,Mapa.CAPA_VEGETAL));
+		new Vegetal(mapa,new Coordenadas(17,22,Mapa.CAPA_VEGETAL));
+		new Vegetal(mapa,new Coordenadas(10,9,Mapa.CAPA_VEGETAL));
+		new Vegetal(mapa,new Coordenadas(18,22,Mapa.CAPA_VEGETAL));
+		new Vegetal(mapa,new Coordenadas(10,12,Mapa.CAPA_VEGETAL));
+		new Vegetal(mapa,new Coordenadas(10,6,Mapa.CAPA_VEGETAL));
+		new Vegetal(mapa,new Coordenadas(24,22,Mapa.CAPA_VEGETAL));
+		new Vegetal(mapa,new Coordenadas(15,12,Mapa.CAPA_VEGETAL));
+		new Vegetal(mapa,new Coordenadas(2,22,Mapa.CAPA_VEGETAL));
+		new Vegetal(mapa,new Coordenadas(15,3,Mapa.CAPA_VEGETAL));
+		new Vegetal(mapa,new Coordenadas(12,22,Mapa.CAPA_VEGETAL));
+		new Vegetal(mapa,new Coordenadas(5,12,Mapa.CAPA_VEGETAL));
+		new Vegetal(mapa,new Coordenadas(22,7,Mapa.CAPA_VEGETAL));
+		new Vegetal(mapa,new Coordenadas(8,32,Mapa.CAPA_VEGETAL));
+		new Vegetal(mapa,new Coordenadas(9,9,Mapa.CAPA_VEGETAL));
+		new Vegetal(mapa,new Coordenadas(0,0,Mapa.CAPA_VEGETAL));
+		
+		new Animal(mapa,new Coordenadas(35,35,Mapa.CAPA_ANIMAL),Animal.CARNIVORO);
 	}
 	
 	private synchronized void reset() {

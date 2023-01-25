@@ -43,8 +43,7 @@ public class Animal extends Actor {
 		indiceEtapaCrecimiento = 0.15; //20%
 		metabolismoBasal = -0.0005; //- 0.1%
 		
-		capa = 2;
-		mapa.putActor(this,coordenadas,capa);
+		mapa.putActor(this,coordenadas);
 		objetivo = null;
 		radioVision = 30;
 		techoVital = 400;
@@ -99,8 +98,8 @@ public class Animal extends Actor {
 				int xObjetivo = coordenadas.getX() + i;
 				int yObjetivo = coordenadas.getY() + j;
 				if( !(xObjetivo < 0 || xObjetivo >= mapa.getAncho() || yObjetivo < 0 || yObjetivo >= mapa.getAlto())) {
-					if(mapa.isLibre(xObjetivo,yObjetivo,capa)) {
-						Coordenadas libre = new Coordenadas(xObjetivo,yObjetivo);
+					if(mapa.isLibre(xObjetivo,yObjetivo,coordenadas.getZ())) {
+						Coordenadas libre = new Coordenadas(xObjetivo,yObjetivo,coordenadas.getZ());
 						entornoLibre.add(libre);
 					}
 				}
@@ -115,7 +114,7 @@ public class Animal extends Actor {
 			estado += "\n Se mueve";
 			Coordenadas coordenadasViejas = coordenadas;
 			coordenadas = entornoLibre.get(random.nextInt(entornoLibre.size()));
-			mapa.moverActor(this, coordenadasViejas,coordenadas, capa);
+			mapa.moverActor(this, coordenadasViejas,coordenadas, coordenadas.getZ());
 		}
 		else {
 			estado += "\n No hay suficiente espacio para moverse";
@@ -139,7 +138,8 @@ public class Animal extends Actor {
 						if(presa != null) {
 							if(presa instanceof Animal) {
 								Animal presaAnimal = (Animal)presa;
-								if(! (presaAnimal.getTipoAlimentacion() == 2)) {
+								//Comprueba que no vaya a cazar a otro carnivoro
+								if(presaAnimal.getTipoAlimentacion() != Animal.CARNIVORO) {
 									presas.add(presa);
 								}
 							}
@@ -167,21 +167,28 @@ public class Animal extends Actor {
 		estado += "\n Persigue una presa";
 		double distancia = coordenadas.calcularDistancia(objetivo.getCoordenadas());
 			
+			//Arreglar esto
 			/*if(distancia > radioVision || !objetivo.isVivo()) {
 				estado += "\n Presa demasiado lejos";
 				objetivo = null;
 				buscarPresa();
 			}*/
+		
 		if(objetivo.isVivo()) {
+			
+			//Si la presa esta cerca se moverá hacia la presa 
 			if(distancia > 1.6 ) {
 				estado += "\n Presa cercana";
+				//Calcula las coordenadas hacia la que debe moverse para acercarse al objetivo y si esta
+				//libre se moverá hacia allí
 				int x = coordenadas.getX() +  coordenadas.calcularDireccionX(objetivo.getCoordenadas());
 				int y = coordenadas.getY() +  coordenadas.calcularDireccionY(objetivo.getCoordenadas());
-				if(mapa.isLibre(x, y, capa)) {
+				if(mapa.isLibre(x, y, coordenadas.getZ())) {
 					mapa.moverActor(this,x,y);
-					coordenadas = new Coordenadas(x,y);
+					coordenadas = new Coordenadas(x,y,coordenadas.getZ());
 				}
 			}
+			//Si la presa esta justo al lado
 			else {
 				estado += "\n Presa al lado";
 				comer();

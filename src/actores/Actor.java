@@ -10,7 +10,6 @@ public abstract class Actor {
 	protected Mapa mapa;
 	protected Coordenadas coordenadas;
 	protected boolean isVivo;
-	protected int capa;
 	protected Random random;
 	
 	protected double masa;
@@ -59,10 +58,6 @@ public abstract class Actor {
 	
 	public Coordenadas getCoordenadas() {
 		return coordenadas;
-	}
-	
-	public int getCapa() {
-		return capa;
 	}
 	
 	public void actuar() {
