@@ -110,7 +110,6 @@ public class Mapa {
 	 * actualiza el mapa, copia a una lista todos los actores del mapa y dibuja todo el mapa
 	 */
 	public void actualizarMapa() {
-		actores = new ArrayList<>();
 
 		for(int x = 0 ; x < ancho ; x++) {
 			for(int y = 0 ; y < largo ; y++) {
@@ -119,7 +118,6 @@ public class Mapa {
 				Actor animal = getActor(x, y,CAPA_ANIMAL);
 				if(planta != null) {
 					dibujarCelda(x,y,fabricaTiles.HIERBA,false);
-					actores.add(planta);
 				}
 				if(animal != null) {
 					if(((Animal) animal).getTipoAlimentacion() == Animal.HERVIVORO)
@@ -129,6 +127,22 @@ public class Mapa {
 					if(animal.getMarcar()) {
 						dibujarCelda(x,y,fabricaTiles.HEMBRA,true);
 					}
+				}
+			}
+		}
+	}
+	
+	public void actualizarListas() {
+		actores = new ArrayList<>();
+
+		for(int x = 0 ; x < ancho ; x++) {
+			for(int y = 0 ; y < largo ; y++) {
+				Actor planta = getActor(x, y ,CAPA_VEGETAL);
+				Actor animal = getActor(x, y,CAPA_ANIMAL);
+				if(planta != null) {
+					actores.add(planta);
+				}
+				if(animal != null) {
 					actores.add(animal);
 				}
 			}

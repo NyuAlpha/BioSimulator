@@ -50,13 +50,6 @@ public class SimuladorLogica implements Runnable
 	
 	public synchronized void run() {
 		while(continuar) {
-			/*
-			try {
-				Thread.sleep(200);
-			} catch (InterruptedException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}*/
 			actualizarSimulacion(pausaMilisegundos);
 		}
 	}
@@ -85,6 +78,7 @@ public class SimuladorLogica implements Runnable
 		mapa.actualizarMapa();
 		outputConsola.append("\n Fin de iteración nº " + ++iteracion +"  Pobl A/V = " + medidorAnimales +"|"+ medidorVegetales + "\n");
 		GUI.redibujar();
+		mapa.actualizarListas();
 	}
 	
 	private void actualizarSimulacion(int milisegundos) {
@@ -142,6 +136,7 @@ public class SimuladorLogica implements Runnable
 				mapa.getActor(x,y,z).setMarcar();
 				mapa.actualizarMapa();
 				GUI.redibujar();
+				mapa.actualizarListas();
 				break;
 			default:
 				outputConsola.setText("Comando no reconocido");
@@ -190,5 +185,6 @@ public class SimuladorLogica implements Runnable
 		crearActores();
 		mapa.actualizarMapa();
 		GUI.repaint();
+		mapa.actualizarListas();
 	}
 }
