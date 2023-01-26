@@ -210,7 +210,7 @@ class PanelSimulacion extends JPanel implements MouseListener{
 	@Override
 	public void mouseClicked(MouseEvent e) {
 		// TODO Auto-generated method stub
-		outputConsola.append( "\n Coordenada seleccionada -> " + e.getX()/7 + "-" + e.getY()/7);
+		outputConsola.append( "\n Coordenada seleccionada -> " + e.getX()/Mapa.TILE_WIDTH + "-" + e.getY()/Mapa.TILE_WIDTH);
 	}
 
 	@Override

@@ -13,6 +13,7 @@ public class Vegetal extends Actor {
 	public Vegetal(Mapa mapa, Coordenadas coordenadas) {
 		super(mapa, coordenadas);
 		masa = 50;
+		colorAsociado = TiposActores.CESPED.getColorRGB();
 		indiceCrecimiento = 0.02; //2%
 		tamanno = Math.sqrt(masa);
 		indiceEtapaCrecimiento = 0.2; //20%
@@ -39,7 +40,7 @@ public class Vegetal extends Actor {
 			for (int j = -r; j <= r; j++) {
 				int xObjetivo = coordenadas.getX() + i;
 				int yObjetivo = coordenadas.getY() + j;
-				if( !(xObjetivo < 0 || xObjetivo >= mapa.getAncho() || yObjetivo < 0 || yObjetivo >= mapa.getAlto())) {
+				if( !(xObjetivo < 0 || xObjetivo >= Mapa.ANCHO || yObjetivo < 0 || yObjetivo >= Mapa.ALTO)) {
 					if(mapa.isLibre(xObjetivo,yObjetivo,coordenadas.getZ())) {
 						Coordenadas libre = new Coordenadas(xObjetivo,yObjetivo,coordenadas.getZ());
 						coordenadasLibres.add(libre);

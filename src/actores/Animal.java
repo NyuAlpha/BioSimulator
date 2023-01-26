@@ -31,10 +31,12 @@ public class Animal extends Actor {
 		if(alimentacion == CARNIVORO) {
 			eficienciaAlimenticia = 0.3;
 			masa = 150;
+			colorAsociado = TiposActores.CAZADOR_M.getColorRGB();
 		}
 		else {
 			eficienciaAlimenticia = 0.8;
 			masa = 300;
+			colorAsociado = TiposActores.PASTOR_M.getColorRGB();
 		}
 		
 		tamanno = Math.sqrt(masa);
@@ -97,7 +99,7 @@ public class Animal extends Actor {
 			for (int j = -radio; j <= radio; j++) {
 				int xObjetivo = coordenadas.getX() + i;
 				int yObjetivo = coordenadas.getY() + j;
-				if( !(xObjetivo < 0 || xObjetivo >= mapa.getAncho() || yObjetivo < 0 || yObjetivo >= mapa.getAlto())) {
+				if( !(xObjetivo < 0 || xObjetivo >= Mapa.ANCHO || yObjetivo < 0 || yObjetivo >= Mapa.ALTO)) {
 					if(mapa.isLibre(xObjetivo,yObjetivo,coordenadas.getZ())) {
 						Coordenadas libre = new Coordenadas(xObjetivo,yObjetivo,coordenadas.getZ());
 						entornoLibre.add(libre);
@@ -133,7 +135,7 @@ public class Animal extends Actor {
 				for (int j = -radioBusqueda; j <= radioBusqueda; j++) {
 					int xObjetivo = coordenadas.getX() + i;
 					int yObjetivo = coordenadas.getY() + j;
-					if( !(xObjetivo < 0 || xObjetivo >= mapa.getAncho() || yObjetivo < 0 || yObjetivo >= mapa.getAlto())) {
+					if( !(xObjetivo < 0 || xObjetivo >= Mapa.ANCHO || yObjetivo < 0 || yObjetivo >= Mapa.ALTO)) {
 						presa = mapa.getActor(xObjetivo,yObjetivo,alimentacion);
 						if(presa != null) {
 							if(presa instanceof Animal) {

@@ -75,7 +75,7 @@ public class SimuladorLogica implements Runnable
 			}
 			else {medidorVegetales++;}
 		}
-		mapa.actualizarMapa();
+		mapa.dibujarMapa();
 		outputConsola.append("\n Fin de iteración nº " + ++iteracion +"  Pobl A/V = " + medidorAnimales +"|"+ medidorVegetales + "\n");
 		GUI.redibujar();
 		mapa.actualizarListas();
@@ -134,7 +134,7 @@ public class SimuladorLogica implements Runnable
 				int y = Integer.parseInt(tokens[2]);
 				int z = Integer.parseInt(tokens[3]);
 				mapa.getActor(x,y,z).setMarcar();
-				mapa.actualizarMapa();
+				mapa.dibujarMapa();
 				GUI.redibujar();
 				mapa.actualizarListas();
 				break;
@@ -183,7 +183,7 @@ public class SimuladorLogica implements Runnable
 		iteracion = 0;
 		mapa.reset();
 		crearActores();
-		mapa.actualizarMapa();
+		mapa.dibujarMapa();
 		GUI.repaint();
 		mapa.actualizarListas();
 	}

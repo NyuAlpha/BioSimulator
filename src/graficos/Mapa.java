@@ -1,11 +1,11 @@
 package graficos;
 
-import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
 import actores.Actor;
 import actores.Animal;
+import actores.TiposActores;
 
 /**
  * Esta clase representa el mapa donde tendrá lugar la simulación.
@@ -18,13 +18,14 @@ public class Mapa {
 	private  Actor [][][] campo;
 	//Lista de todos los actores del mapa
 	private ArrayList<Actor> actores;
-	//Donde se crean todos los tiles que serán dibujados en el mapa
-	private FabricaTiles fabricaTiles;
 	//Donde se dibuja el mapa y todos sus actores
 	private BufferedImage imagenMapa;
-	//Anchura y altura del mapa
-	private int ancho;
-	private int largo;
+	
+	//Anchura y altura del mapa en tiles
+	public static final int ANCHO = 120;
+	public static final int ALTO = 100;
+	//pixeles de anchura de cada tile
+	public static final int TILE_WIDTH = 7;
 	
 	//Capas posibles de las coordenadas de Z
 	public static final int CAPA_BASE = 0;
@@ -37,14 +38,10 @@ public class Mapa {
 	 * @param ancho - anchura del mapa en tiles o celdas
 	 * @param largo - altura del mapa en tiles o celdas
 	 */
-	public Mapa(int ancho, int largo) {
+	public Mapa() {
 		
-		this.ancho = ancho;
-		this.largo = largo;
-		
-		fabricaTiles = new FabricaTiles();
-		int anchuraPixeles =  ancho * FabricaTiles.LADO_TILE ;
-		int alturaPixeles = largo * FabricaTiles.LADO_TILE ;
+		int anchuraPixeles =  ANCHO * TILE_WIDTH ;
+		int alturaPixeles = ALTO * TILE_WIDTH ;
 		imagenMapa = new BufferedImage(anchuraPixeles, alturaPixeles, BufferedImage.TYPE_INT_RGB);
 		
 		//se resetea el mapa al crearlo
@@ -109,24 +106,33 @@ public class Mapa {
 	/**
 	 * actualiza el mapa, copia a una lista todos los actores del mapa y dibuja todo el mapa
 	 */
-	public void actualizarMapa() {
+	public void dibujarMapa() {
 
-		for(int x = 0 ; x < ancho ; x++) {
-			for(int y = 0 ; y < largo ; y++) {
-				dibujarCelda(x,y,fabricaTiles.TIERRA,false);
+		for(int x = 0 ; x < ANCHO ; x++) {
+			for(int y = 0 ; y < ALTO ; y++) {
+
 				Actor planta = getActor(x, y ,CAPA_VEGETAL);
 				Actor animal = getActor(x, y,CAPA_ANIMAL);
-				if(planta != null) {
-					dibujarCelda(x,y,fabricaTiles.HIERBA,false);
-				}
+
 				if(animal != null) {
-					if(((Animal) animal).getTipoAlimentacion() == Animal.HERVIVORO)
-						{dibujarCelda(x,y,fabricaTiles.MACHO,false);}
-					else if(((Animal) animal).getTipoAlimentacion() == Animal.CARNIVORO)
-						{dibujarCelda(x,y,fabricaTiles.HEMBRA,false);}
-					if(animal.getMarcar()) {
-						dibujarCelda(x,y,fabricaTiles.HEMBRA,true);
+					if(animal.getTamanno() < 14) {
+						if(planta != null) {
+							dibujarCelda(0,x,y,planta.getColorAsociado());
+						}
+						else {
+							dibujarCelda(0,x,y,TiposActores.SUELO.getColorRGB());
+						}
+						dibujarCelda(2,x,y,animal.getColorAsociado());
 					}
+					else {
+						dibujarCelda(1,x,y,animal.getColorAsociado());
+					}
+				}
+				else if(planta != null) {
+					dibujarCelda(0,x,y,planta.getColorAsociado());
+				}
+				else {
+					dibujarCelda(0,x,y,TiposActores.SUELO.getColorRGB());
 				}
 			}
 		}
@@ -135,8 +141,8 @@ public class Mapa {
 	public void actualizarListas() {
 		actores = new ArrayList<>();
 
-		for(int x = 0 ; x < ancho ; x++) {
-			for(int y = 0 ; y < largo ; y++) {
+		for(int x = 0 ; x < ANCHO ; x++) {
+			for(int y = 0 ; y < ALTO ; y++) {
 				Actor planta = getActor(x, y ,CAPA_VEGETAL);
 				Actor animal = getActor(x, y,CAPA_ANIMAL);
 				if(planta != null) {
@@ -149,33 +155,13 @@ public class Mapa {
 		}
 	}
 	
-	/**
-	 * Dibuja un tile en el mapa con las coordenadas y el tile especificado
-	 * @param celdaX - la coordenada x
-	 * @param celdaY - la coordenada y
-	 * @param tile - el tile que dibujará
-	 */
-	private void dibujarCelda(int celdaX , int celdaY, int[][] tile, boolean marcado){
-		for(int i = 0; i <FabricaTiles.LADO_TILE;i++) {
-			for(int j = 0; j <FabricaTiles.LADO_TILE;j++) {
-				int filtro = tile[i][j];
-				if(marcado) {
-					filtro = Color.yellow.getRGB();
-				}
-				if(filtro != 0)
-					imagenMapa.setRGB(celdaX * FabricaTiles.LADO_TILE +i,celdaY * FabricaTiles.LADO_TILE +j,  filtro );
+
+	private void dibujarCelda(int margen,int celdaX , int celdaY, int colorRGB){
+		for(int i = margen; i <TILE_WIDTH - margen;i++) {
+			for(int j = margen; j <TILE_WIDTH - margen;j++) {
+				imagenMapa.setRGB(celdaX * TILE_WIDTH +i,celdaY * TILE_WIDTH +j,  colorRGB );
 			}
 		}
-	}
-
-	
-
-	public int getAncho() {
-		return ancho;
-	}
-
-	public int getAlto() {
-		return largo;
 	}
 
 	/**
@@ -187,7 +173,7 @@ public class Mapa {
 	}
 	
 	public void reset() {
-		campo = new Actor[ancho][largo][CAPAS_TOTALES];
-		actualizarMapa();
+		campo = new Actor[ANCHO][ALTO][CAPAS_TOTALES];
+		dibujarMapa();
 	}
 }

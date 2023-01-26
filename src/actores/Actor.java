@@ -23,6 +23,7 @@ public abstract class Actor {
 	
 	//Estado del actor, meramente informativo
 	protected String estado;
+	protected int colorAsociado;
 	boolean marcar;
 	//protected int[][] tileArray;
 
@@ -84,15 +85,25 @@ public abstract class Actor {
 	
 	public void setMarcar() {
 		marcar = !marcar;
+		if(marcar) {
+			colorAsociado = TiposActores.MARCADO.getColorRGB();
+		}
 	}
 	
 	public boolean getMarcar() {
 		return marcar;
 	}
 	
+	public double getTamanno() {
+		return tamanno;
+	}
 	
 	public String getEstado() {
 		return estado;
+	}
+	
+	public int getColorAsociado() {
+		return colorAsociado;
 	}
 	
 	protected abstract void reproducirse();
