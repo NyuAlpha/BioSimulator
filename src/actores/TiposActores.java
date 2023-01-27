@@ -6,7 +6,7 @@ public enum TiposActores {
 	
 	SUELO(Color.GRAY.getRGB()),
 	ROCA(Color.DARK_GRAY.getRGB()),
-	CESPED(Color.GREEN.getRGB()),
+	CESPED(new Color(130,207,160).getRGB()),
 	CAZADOR_M(new Color(150,0,0).getRGB()),
 	CAZADOR_H(new Color(255,62,112).getRGB()),
 	PASTOR_M(new Color(0,55,113).getRGB()),

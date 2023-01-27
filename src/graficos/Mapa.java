@@ -35,16 +35,15 @@ public class Mapa {
 	
 	/**
 	 * Crea un mapa con un ancho y un alto de tiles o celdas
-	 * @param ancho - anchura del mapa en tiles o celdas
-	 * @param largo - altura del mapa en tiles o celdas
 	 */
 	public Mapa() {
 		
+		//Crea un bufferedImage que representará el mapa
 		int anchuraPixeles =  ANCHO * TILE_WIDTH ;
 		int alturaPixeles = ALTO * TILE_WIDTH ;
 		imagenMapa = new BufferedImage(anchuraPixeles, alturaPixeles, BufferedImage.TYPE_INT_RGB);
 		
-		//se resetea el mapa al crearlo
+		//reset del mapa al crearlo
 		reset();
 	}
 	
@@ -95,16 +94,15 @@ public class Mapa {
 	}
 	
 	
-	/**
+	/*
 	 * Devuelve la lista de actores que hay en el mapa
-	 * @return la lista de actores del mapa
 	 */
 	public ArrayList<Actor> getListaActores(){
 		return actores;
 	}
 
-	/**
-	 * actualiza el mapa, copia a una lista todos los actores del mapa y dibuja todo el mapa
+	/*
+	 * Dibuja cada celda del mapa en su estado actual
 	 */
 	public void dibujarMapa() {
 
@@ -114,30 +112,35 @@ public class Mapa {
 				Actor planta = getActor(x, y ,CAPA_VEGETAL);
 				Actor animal = getActor(x, y,CAPA_ANIMAL);
 
-				if(animal != null) {
-					if(animal.getTamanno() < 14) {
-						if(planta != null) {
-							dibujarCelda(0,x,y,planta.getColorAsociado());
-						}
-						else {
-							dibujarCelda(0,x,y,TiposActores.SUELO.getColorRGB());
-						}
-						dibujarCelda(2,x,y,animal.getColorAsociado());
-					}
-					else {
-						dibujarCelda(1,x,y,animal.getColorAsociado());
-					}
-				}
-				else if(planta != null) {
-					dibujarCelda(0,x,y,planta.getColorAsociado());
+				if(planta != null) {
+					dibujarCelda(planta.getMargenAsociado(),x,y,planta.getColorAsociado());
 				}
 				else {
 					dibujarCelda(0,x,y,TiposActores.SUELO.getColorRGB());
 				}
+				
+				if(animal != null) {
+					dibujarCelda(animal.getMargenAsociado(),x,y,animal.getColorAsociado());
+				}
+			}
+		}
+	}
+
+	/*
+	 * Dibuja una celda en el mapa indicandole el margen que dejará vacio, las coordenadas de la celda X e Y 
+	 * y el color que usará
+	 */
+	private void dibujarCelda(int margen,int celdaX , int celdaY, int colorRGB){
+		for(int i = margen; i <TILE_WIDTH - margen;i++) {
+			for(int j = margen; j <TILE_WIDTH - margen;j++) {
+				imagenMapa.setRGB(celdaX * TILE_WIDTH +i,celdaY * TILE_WIDTH +j,  colorRGB );
 			}
 		}
 	}
 	
+	/*
+	 * Actualiza el array de actores que hay en el mapa
+	 */
 	public void actualizarListas() {
 		actores = new ArrayList<>();
 
@@ -155,25 +158,17 @@ public class Mapa {
 		}
 	}
 	
-
-	private void dibujarCelda(int margen,int celdaX , int celdaY, int colorRGB){
-		for(int i = margen; i <TILE_WIDTH - margen;i++) {
-			for(int j = margen; j <TILE_WIDTH - margen;j++) {
-				imagenMapa.setRGB(celdaX * TILE_WIDTH +i,celdaY * TILE_WIDTH +j,  colorRGB );
-			}
-		}
-	}
-
-	/**
-	 * Devuelve la imagen del mapa
-	 * @return la imagen del mapa
+	/*
+	 * Devuelve un BufferedImage con la imagen del mapa
 	 */
 	public BufferedImage getImagenMapa() {
 		return imagenMapa;
 	}
 	
+	/*
+	 * Inicia el array del mapa haciendo un reset
+	 */
 	public void reset() {
 		campo = new Actor[ANCHO][ALTO][CAPAS_TOTALES];
-		dibujarMapa();
 	}
 }

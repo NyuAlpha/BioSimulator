@@ -3,32 +3,30 @@ package actores;
 import java.util.ArrayList;
 import java.util.Random;
 
+import biología.ADN;
+import biología.BodyAnimal;
+import biología.BodyVegetal;
 import graficos.Coordenadas;
 import graficos.Mapa;
 
 public class Vegetal extends Actor {
 
-	private double fotosintesis;
+	private BodyVegetal body;
 	
-	public Vegetal(Mapa mapa, Coordenadas coordenadas) {
+	public Vegetal(Mapa mapa, Coordenadas coordenadas, ADN adn) {
 		super(mapa, coordenadas);
-		masa = 50;
+		body = new BodyVegetal(adn,this);
 		colorAsociado = TiposActores.CESPED.getColorRGB();
-		indiceCrecimiento = 0.02; //2%
-		tamanno = Math.sqrt(masa);
-		indiceEtapaCrecimiento = 0.2; //20%
-		//metabolismoBasal = -0.005; //- 0.5%
-		fotosintesis = 0.03;
-		
-		techoVital = 100;
+		margenAsociado = 0;
 		mapa.putActor(this,coordenadas);
 	}
 
 	@Override
 	public void actuar() {
-		estado = "";
-		if(random.nextInt(100) < 10)
+		if(random.nextInt(100) < 3) {
 			reproducirse();
+		}
+		body.metabolismo();
 	}
 
 	
@@ -50,16 +48,16 @@ public class Vegetal extends Actor {
 		}
 		if(!coordenadasLibres.isEmpty()) {
 			Coordenadas coordenadasNuevas = coordenadasLibres.get(random.nextInt(coordenadasLibres.size()));
-			new Vegetal(mapa,coordenadasNuevas);
+			new Vegetal(mapa,coordenadasNuevas,body.getAdn());
 		}
 	}
-
-	/**
-	 * Simula el metabolismo de la planta
-	 */
-	protected void metabolismo() {
-		super.metabolismo();
-		//Una planta siempre crea masa de la aparente nada
-		masa += masa * fotosintesis;
+	
+	public BodyVegetal getBody() {
+		return body;
 	}
+	
+	public String toString() {
+		return String.format("\n m:%.1f/t:%.1f e:%d",body.getMasa(),body.getTamanno(),(int)body.getCicloVital());
+	}
+
 }

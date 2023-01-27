@@ -3,97 +3,104 @@ package actores;
 import java.util.ArrayList;
 import java.util.Random;
 
+import biología.ADN;
+import biología.BodyAnimal;
 import graficos.Coordenadas;
 import graficos.Mapa;
 
 public class Animal extends Actor {
 	
 	private Actor objetivo;
-	private int radioVision;
+	private Animal pareja;
 	private ArrayList<Coordenadas> entornoLibre;
-	private int alimentacion;
-	public static final int HERVIVORO = 1;
-	public static final int CARNIVORO = 2;
-	public static final int OMNIVORO = 3;
-	
-	
-	private double relacionPesoHambre;
-	private double relacionPesoMuerte;
-	
-	private double eficienciaAlimenticia;  
+	private BodyAnimal body;
 
-	
-	public Animal(Mapa mapa, Coordenadas coordenadas, int alimentacion) {
+
+	//Constructor de reproduccion, solo usable desde una instancia de tipo animal
+	private Animal(Mapa mapa, Coordenadas coordenadas,Feto feto) {
 		
 		super(mapa, coordenadas);
+		body = new BodyAnimal(feto,this);
+		iniciarVariablesComunes();
+	}
+	
+	//Constructor inicial
+	public Animal(Mapa mapa, Coordenadas coordenadas,ADN adn,double tamanno) {
 		
-		
-		if(alimentacion == CARNIVORO) {
-			eficienciaAlimenticia = 0.3;
-			masa = 150;
-			colorAsociado = TiposActores.CAZADOR_M.getColorRGB();
-		}
-		else {
-			eficienciaAlimenticia = 0.8;
-			masa = 300;
-			colorAsociado = TiposActores.PASTOR_M.getColorRGB();
-		}
-		
-		tamanno = Math.sqrt(masa);
-		
-		indiceCrecimiento = 0.00005; //0.01%
-		indiceEtapaCrecimiento = 0.15; //20%
-		metabolismoBasal = -0.0005; //- 0.1%
-		
+		super(mapa, coordenadas);
+		body = new BodyAnimal(adn,this);
+		body.setTamanno(tamanno);
+		iniciarVariablesComunes();
+	}
+	
+	private void iniciarVariablesComunes() {
+		establecerAsociaciones();
 		mapa.putActor(this,coordenadas);
 		objetivo = null;
-		radioVision = 30;
-		techoVital = 400;
-		this.alimentacion = alimentacion;
-		
-		relacionPesoHambre = 0.95;
-		relacionPesoMuerte = 0.5;
-
-
-
-		
+		pareja = null;
 	}
-
+	
+	private void establecerAsociaciones() {
+		
+		if(marcar) {
+			colorAsociado = TiposActores.MARCADO.getColorRGB();
+		}
+		else {
+			if(body.getTipoAlimentacion() == ADN.CARNIVORO) {
+				if(body.getSexo() == ADN.HEMBRA)
+					colorAsociado = TiposActores.CAZADOR_H.getColorRGB();
+				else 
+					colorAsociado = TiposActores.CAZADOR_M.getColorRGB();
+			}
+			else {
+				if(body.getSexo() == ADN.HEMBRA)
+					colorAsociado = TiposActores.PASTOR_H.getColorRGB();
+				else 
+					colorAsociado = TiposActores.PASTOR_M.getColorRGB();
+			}
+	
+					
+			margenAsociado = (body.getAdulto())? 1:2;
+		}
+	}
+	
 	public void actuar() {
 		
 		if(isVivo) {
-			estado = "";
 			comprobarEntorno(1);
-
 			
-			
-			//Si esta listo para reproducirse
-			if(cicloVital >= techoVital * indiceEtapaCrecimiento && (masa >= (tamanno * tamanno))) {
-					reproducirse();
-					estado += "\n Listo para aparearse";
-			}
-			
-			//Si tiene hambre 
-			else if( (masa <= (tamanno * tamanno) * 1.1)) {
-				estado += "\n Esta hambriento";
-				if(objetivo == null)
-					buscarPresa();
-				else
-					perseguirPresa();
+			if(body.getHambre() == BodyAnimal.HAMBRIENTO || body.getHambre() == BodyAnimal.MUY_HAMBRIENTO) {
+				if(objetivo == null) {
+					buscarObjetivo();
 				}
+				else {
+					perseguirObjetivo();
+				}	
+			}
+			//Si su líbido es alta
+			else if((body.getLibido() == BodyAnimal.CELO && body.getSexo() == ADN.MACHO)){
+				if(pareja == null) {
+					buscarPareja();
+				}
+				else {
+					perseguirPareja();
+				}
+			}
 			else {
-				estado += "\n No tiene hambre";
 				mover();
 			}
 			
-			metabolismo();
-			estado += "\n" + toString();
+			if(body.getEncinta()) {
+				body.gestacion();
+			}
+				
+			body.metabolismo();
+			establecerAsociaciones();
 		}
-		}
+	}
 
 	
 	private void comprobarEntorno(int radio) {
-		estado += "\n Busca espacio libre a su alrededor ";
 		entornoLibre = new ArrayList<>();
 		for (int i = -radio; i <= radio; i++) {
 			for (int j = -radio; j <= radio; j++) {
@@ -111,37 +118,31 @@ public class Animal extends Actor {
 	
 	private void mover() {
 
-		estado += "\n Quiere moverse";
 		if(!entornoLibre.isEmpty()) {
-			estado += "\n Se mueve";
 			Coordenadas coordenadasViejas = coordenadas;
 			coordenadas = entornoLibre.get(random.nextInt(entornoLibre.size()));
 			mapa.moverActor(this, coordenadasViejas,coordenadas, coordenadas.getZ());
 		}
-		else {
-			estado += "\n No hay suficiente espacio para moverse";
-		}
 	}
 	
 	
-	private void buscarPresa() {
-		estado += "\n Procede a buscar presas";
+	private void buscarObjetivo() {
 		int radioBusqueda = 1;
 		ArrayList<Actor> presas;
 		Actor presa = null;
-		while(objetivo == null && radioBusqueda < radioVision) {
+		while(objetivo == null && radioBusqueda < body.getRadioVision()) {
 			presas = new ArrayList<>();
 			for (int i = -radioBusqueda; i <= radioBusqueda; i++) {
 				for (int j = -radioBusqueda; j <= radioBusqueda; j++) {
 					int xObjetivo = coordenadas.getX() + i;
 					int yObjetivo = coordenadas.getY() + j;
 					if( !(xObjetivo < 0 || xObjetivo >= Mapa.ANCHO || yObjetivo < 0 || yObjetivo >= Mapa.ALTO)) {
-						presa = mapa.getActor(xObjetivo,yObjetivo,alimentacion);
+						presa = mapa.getActor(xObjetivo,yObjetivo,body.getTipoAlimentacion());
 						if(presa != null) {
 							if(presa instanceof Animal) {
-								Animal presaAnimal = (Animal)presa;
+								Animal animal = (Animal)presa;
 								//Comprueba que no vaya a cazar a otro carnivoro
-								if(presaAnimal.getTipoAlimentacion() != Animal.CARNIVORO) {
+								if(animal.getBody().getTipoAlimentacion() != ADN.CARNIVORO) {
 									presas.add(presa);
 								}
 							}
@@ -155,32 +156,55 @@ public class Animal extends Actor {
 			}
 			if(!presas.isEmpty()) {
 				objetivo = presas.get(random.nextInt(presas.size()));
-				String vivo = (objetivo.isVivo())? "vivo":"muerto";
-				estado += "\n Presa detectada ->  " + vivo;
 				return;
 			}
 			radioBusqueda++;
 		}
-		estado += "\n No ha encontrado presas cercanas";
 		mover();
 	}
 	
-	private void perseguirPresa() {
-		estado += "\n Persigue una presa";
-		double distancia = coordenadas.calcularDistancia(objetivo.getCoordenadas());
-			
-			//Arreglar esto
-			/*if(distancia > radioVision || !objetivo.isVivo()) {
-				estado += "\n Presa demasiado lejos";
-				objetivo = null;
-				buscarPresa();
-			}*/
+	private void buscarPareja() {
+		int radioBusqueda = 1;
+		ArrayList<Animal> parejas;
+		Animal parejaSex = null;
+		while(pareja == null && radioBusqueda < body.getRadioVision()) {
+			parejas = new ArrayList<>();
+			//Va a buscar alrededor con el doble for, incrementando el area en cada iteracción de while mientras no encuentre nada
+			for (int i = -radioBusqueda; i <= radioBusqueda; i++) {
+				for (int j = -radioBusqueda; j <= radioBusqueda; j++) {
+					//Coordenadas que va a comprobar
+					int xObjetivo = coordenadas.getX() + i; 
+					int yObjetivo = coordenadas.getY() + j;
+					//Comprueba que esten dentro de los limites del mapa
+					if( !(xObjetivo < 0 || xObjetivo >= Mapa.ANCHO || yObjetivo < 0 || yObjetivo >= Mapa.ALTO)) {
+						//pide el mapa el animal de dichas coordenadas
+						parejaSex = (Animal)mapa.getActor(xObjetivo,yObjetivo,Mapa.CAPA_ANIMAL);
+						if(parejaSex != null) {
+							//Si la posible pareja es distinta a su sexo ,es fertil y no está preñada
+							BodyAnimal bodyF = parejaSex.getBody();
+							if(bodyF.getSexo() != body.getSexo() && bodyF.getFertil() && !bodyF.getEncinta()) {
+								parejas.add(parejaSex);
+							}
+						}
+					}
+				}
+			}
+			if(!parejas.isEmpty()) {
+				pareja = parejas.get(random.nextInt(parejas.size()));
+				return;
+			}
+			radioBusqueda++;
+		}
+		mover();
+	}
+	
+	private void perseguirObjetivo() {
 		
+		double distancia = coordenadas.calcularDistancia(objetivo.getCoordenadas());		
 		if(objetivo.isVivo()) {
 			
 			//Si la presa esta cerca se moverá hacia la presa 
 			if(distancia > 1.6 ) {
-				estado += "\n Presa cercana";
 				//Calcula las coordenadas hacia la que debe moverse para acercarse al objetivo y si esta
 				//libre se moverá hacia allí
 				int x = coordenadas.getX() +  coordenadas.calcularDireccionX(objetivo.getCoordenadas());
@@ -192,64 +216,74 @@ public class Animal extends Actor {
 			}
 			//Si la presa esta justo al lado
 			else {
-				estado += "\n Presa al lado";
-				comer();
+				comer(objetivo);
+				objetivo = null;
 			}
 		}
 		else {
-			estado += "\n Presa muerta";
 			objetivo = null;
 			mover();
 		}
 	}
 	
-	private void comer() {
-		masa += objetivo.getMasa() * eficienciaAlimenticia;
-		objetivo.morir();
-		estado += "\n Come a " + objetivo.toString();
-		objetivo = null;
-
-	}
-
-	protected void reproducirse() {
-		if(!entornoLibre.isEmpty()) {
-			Coordenadas coordenadasNuevas = entornoLibre.get(random.nextInt(entornoLibre.size()));
-			new Animal(mapa,coordenadasNuevas,alimentacion);
-			masa -= 150;
-			estado += "\n Se reproduce";
+	private void perseguirPareja() {
+		
+		double distancia = coordenadas.calcularDistancia(pareja.getCoordenadas());		
+		if(pareja.isVivo()) {
+			
+			//Si la pareja esta cerca
+			if(distancia > 1.6 ) {
+				//Calcula las coordenadas hacia la que debe moverse para acercarse a la pareja y si esta
+				//libre se moverá hacia allí
+				int x = coordenadas.getX() +  coordenadas.calcularDireccionX(pareja.getCoordenadas());
+				int y = coordenadas.getY() +  coordenadas.calcularDireccionY(pareja.getCoordenadas());
+				if(mapa.isLibre(x, y, coordenadas.getZ())) {
+					mapa.moverActor(this,x,y);
+					coordenadas = new Coordenadas(x,y,coordenadas.getZ());
+				}
+			}
+			//Si la presa esta justo al lado
+			else {
+				aparearse();
+				//pareja = null;
+			}
 		}
 		else {
-			estado += "\n No hay suficiente espacio para reproducirse";
+			pareja = null;
+			mover();
 		}
 	}
 	
-	/**
-	 * Simula el metabolismo de un animal, si pierde demasiada masa muere.
-	 */
-	protected void metabolismo() {
-		super.metabolismo();
-		masa += masa * metabolismoBasal;
-		if(masa < (tamanno * tamanno)/2) {
-			estado += "\n Ha perdido demasiado peso";
-			morir();
+	private void comer(Actor alimento) {
+		if(alimento instanceof Animal) {
+			Animal a = (Animal)alimento;
+			body.digestion(a.getBody());
 		}
-	}
-	
-	
-	/**
-	 * devuelve una cadena con informacion relevante sobre el animal
-	 * @return la cadena de texto con informacion relevante sobre el animal
-	 */
-	public String toString() {
-		
-		String objS = (objetivo!=null)? "1":"0";
-		String dieta= (alimentacion==2)? "Carn:":"Herb:"; 
-		return new String().format("%s -> %.0f/%.0f, e:%d, %s%s" ,coordenadas.toString(),masa,tamanno,cicloVital
-				,dieta,objS);
+		else {
+			Vegetal v = (Vegetal)alimento;
+			body.digestion(v.getBody());
+		}
+		alimento.morir();
 	}
 
+	protected void aparearse() {
+		pareja.getBody().insertarEsperma(body.getAdn().meiosis());
+		pareja = null;
+	}
 	
-	public int getTipoAlimentacion() {
-		return alimentacion;
+	public void parir(Feto feto) {
+		if(!entornoLibre.isEmpty()) {
+			Coordenadas coordenadasLibres = entornoLibre.get(random.nextInt(entornoLibre.size()));
+			new Animal(mapa,coordenadasLibres,feto);
+		}
+	}
+	
+	public String toString() {
+		return String.format("\n m:%.1f/t:%.1f e:%d  H:%d sx:%d X:%d"
+							,body.getMasa(),body.getTamanno(),(int)body.getCicloVital(),body.getHambre(),body.getSexo(),body.getLibido());
+	}
+
+	public BodyAnimal getBody() {
+		return body;
 	}
 }

@@ -4,6 +4,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Random;
 
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
@@ -11,6 +12,10 @@ import javax.swing.JTextField;
 import actores.Actor;
 import actores.Animal;
 import actores.Vegetal;
+import biología.ADN;
+import biología.Body;
+import biología.BodyAnimal;
+import biología.BodyVegetal;
 import graficos.Coordenadas;
 import graficos.Mapa;
 
@@ -65,21 +70,29 @@ public class SimuladorLogica implements Runnable
 			actor.actuar();
 
 			if(actor instanceof Animal) {
-				if(mostrarDatos) {
-					outputConsola.append("\n " + actor.toString());
-				}
-				if(actor.getMarcar()) {
-					outputConsola.append(actor.getEstado());
-				}
 				medidorAnimales++;
+				if(mostrarDatos) {
+					outputConsola.append(actor.toString());
+				}
 			}
 			else {medidorVegetales++;}
+			
+			if(actor.getMarcar() && !mostrarDatos) {
+				outputConsola.append(actor.toString());
+			}
 		}
-		mapa.dibujarMapa();
-		outputConsola.append("\n Fin de iteración nº " + ++iteracion +"  Pobl A/V = " + medidorAnimales +"|"+ medidorVegetales + "\n");
-		GUI.redibujar();
-		mapa.actualizarListas();
+		Random random = new Random();
+		int x = random.nextInt(Mapa.ANCHO);
+		int y = random.nextInt(Mapa.ALTO);
+		if(mapa.isLibre(x, y, Mapa.CAPA_VEGETAL)) {
+			new Vegetal(mapa,new Coordenadas(x,y,Mapa.CAPA_VEGETAL),ADN.crearADNVegetal());
+		}
+		
+		actualizarMapa();
+		outputConsola.append("\n Fin de iteración nº " + ++iteracion +"  Pobl A/V = " + medidorAnimales +"|"+ medidorVegetales);
 	}
+	
+
 	
 	private void actualizarSimulacion(int milisegundos) {
 		double inicio = System.nanoTime();
@@ -134,57 +147,56 @@ public class SimuladorLogica implements Runnable
 				int y = Integer.parseInt(tokens[2]);
 				int z = Integer.parseInt(tokens[3]);
 				mapa.getActor(x,y,z).setMarcar();
-				mapa.dibujarMapa();
-				GUI.redibujar();
-				mapa.actualizarListas();
+				actualizarMapa();
+				break;
+			case "insert":
+				//Solo inserta si la iteracción esta parada para evitar errores
+				if(!continuar) {
+					x = Integer.parseInt(tokens[1]);
+					y = Integer.parseInt(tokens[2]);
+					insertCarnivoro(x,y);
+					actualizarMapa();
+				}
+				else {
+					outputConsola.append("\n Imposible insertar durante la simulación");
+				}
 				break;
 			default:
-				outputConsola.setText("Comando no reconocido");
+				outputConsola.setText("\n Comando no reconocido");
 				break;
 		}
 	}
 	
+	private void insertCarnivoro(int x, int y) {
+		new Animal(mapa,new Coordenadas(x,y,Mapa.CAPA_ANIMAL),ADN.crearADNAnimal(ADN.MACHO,ADN.CARNIVORO),3);
+	}
+	
 	private void crearActores() {
-		new Animal(mapa,new Coordenadas(11,20,Mapa.CAPA_ANIMAL),Animal.HERVIVORO);
-		new Animal(mapa,new Coordenadas(20,30,Mapa.CAPA_ANIMAL),Animal.HERVIVORO);
-		new Animal(mapa,new Coordenadas(23,37,Mapa.CAPA_ANIMAL),Animal.HERVIVORO);
-		new Animal(mapa,new Coordenadas(15,40,Mapa.CAPA_ANIMAL),Animal.HERVIVORO);
-		new Animal(mapa,new Coordenadas(1,21,Mapa.CAPA_ANIMAL),Animal.HERVIVORO);
-		new Animal(mapa,new Coordenadas(25,31,Mapa.CAPA_ANIMAL),Animal.HERVIVORO);	
-		new Animal(mapa,new Coordenadas(55,43,Mapa.CAPA_ANIMAL),Animal.HERVIVORO);
-		new Animal(mapa,new Coordenadas(62,57,Mapa.CAPA_ANIMAL),Animal.HERVIVORO);
-		new Animal(mapa,new Coordenadas(70,60,Mapa.CAPA_ANIMAL),Animal.HERVIVORO);
 		
-		new Vegetal(mapa,new Coordenadas(70,50,Mapa.CAPA_VEGETAL));
-		new Vegetal(mapa,new Coordenadas(60,70,Mapa.CAPA_VEGETAL));
-		new Vegetal(mapa,new Coordenadas(50,60,Mapa.CAPA_VEGETAL));
-		new Vegetal(mapa,new Coordenadas(15,25,Mapa.CAPA_VEGETAL));
-		new Vegetal(mapa,new Coordenadas(40,40,Mapa.CAPA_VEGETAL));
-		new Vegetal(mapa,new Coordenadas(17,22,Mapa.CAPA_VEGETAL));
-		new Vegetal(mapa,new Coordenadas(10,9,Mapa.CAPA_VEGETAL));
-		new Vegetal(mapa,new Coordenadas(18,22,Mapa.CAPA_VEGETAL));
-		new Vegetal(mapa,new Coordenadas(10,12,Mapa.CAPA_VEGETAL));
-		new Vegetal(mapa,new Coordenadas(10,6,Mapa.CAPA_VEGETAL));
-		new Vegetal(mapa,new Coordenadas(24,22,Mapa.CAPA_VEGETAL));
-		new Vegetal(mapa,new Coordenadas(15,12,Mapa.CAPA_VEGETAL));
-		new Vegetal(mapa,new Coordenadas(2,22,Mapa.CAPA_VEGETAL));
-		new Vegetal(mapa,new Coordenadas(15,3,Mapa.CAPA_VEGETAL));
-		new Vegetal(mapa,new Coordenadas(12,22,Mapa.CAPA_VEGETAL));
-		new Vegetal(mapa,new Coordenadas(5,12,Mapa.CAPA_VEGETAL));
-		new Vegetal(mapa,new Coordenadas(22,7,Mapa.CAPA_VEGETAL));
-		new Vegetal(mapa,new Coordenadas(8,32,Mapa.CAPA_VEGETAL));
-		new Vegetal(mapa,new Coordenadas(9,9,Mapa.CAPA_VEGETAL));
-		new Vegetal(mapa,new Coordenadas(0,0,Mapa.CAPA_VEGETAL));
-		
-		new Animal(mapa,new Coordenadas(35,35,Mapa.CAPA_ANIMAL),Animal.CARNIVORO);
+		new Animal(mapa,new Coordenadas(11,20,Mapa.CAPA_ANIMAL),ADN.crearADNAnimal(ADN.HEMBRA,ADN.HERBIVORO),3);
+		new Animal(mapa,new Coordenadas(20,30,Mapa.CAPA_ANIMAL),ADN.crearADNAnimal(ADN.MACHO,ADN.HERBIVORO ),3);
+		new Vegetal(mapa,new Coordenadas(16,25,Mapa.CAPA_VEGETAL),ADN.crearADNVegetal());
+		new Vegetal(mapa,new Coordenadas(16,40,Mapa.CAPA_VEGETAL),ADN.crearADNVegetal());
+		new Vegetal(mapa,new Coordenadas(17,25,Mapa.CAPA_VEGETAL),ADN.crearADNVegetal());
+		new Vegetal(mapa,new Coordenadas(18,40,Mapa.CAPA_VEGETAL),ADN.crearADNVegetal());
+		new Vegetal(mapa,new Coordenadas(19,28,Mapa.CAPA_VEGETAL),ADN.crearADNVegetal());
+		new Vegetal(mapa,new Coordenadas(20,40,Mapa.CAPA_VEGETAL),ADN.crearADNVegetal());
+		new Vegetal(mapa,new Coordenadas(40,55,Mapa.CAPA_VEGETAL),ADN.crearADNVegetal());
+		new Vegetal(mapa,new Coordenadas(30,40,Mapa.CAPA_VEGETAL),ADN.crearADNVegetal());
+		new Vegetal(mapa,new Coordenadas(35,28,Mapa.CAPA_VEGETAL),ADN.crearADNVegetal());
+		new Vegetal(mapa,new Coordenadas(25,40,Mapa.CAPA_VEGETAL),ADN.crearADNVegetal());
+	}
+	
+	private void actualizarMapa() {
+		mapa.dibujarMapa();
+		GUI.redibujar();
+		mapa.actualizarListas();
 	}
 	
 	private synchronized void reset() {
 		iteracion = 0;
 		mapa.reset();
 		crearActores();
-		mapa.dibujarMapa();
-		GUI.repaint();
-		mapa.actualizarListas();
+		actualizarMapa();
 	}
 }
