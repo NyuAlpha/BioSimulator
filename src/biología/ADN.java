@@ -10,8 +10,11 @@ public class ADN {
 	
 	public static final int HEMBRA = 0;
 	public static final int MACHO = 1;
-	public static final int HERBIVORO = 1;
+	
+	public static final int HERBIVORO = 0;
+	public static final int OMNIVORO = 1;
 	public static final int CARNIVORO = 2;
+
 	
 	public ADN(Gen [][] adn) {
 		this.adn = adn;
@@ -47,7 +50,7 @@ public class ADN {
 	public static ADN crearADNAnimal(int sexo, int dieta) {
 		
 		//Genes diferenciales de sexo y dieta
-		Gen sex,diet,eficiencia_kcal;
+		Gen sex,diet,eficiencia_kcal,vel,crecimiento;
 		
 		if(sexo == MACHO)
 			sex = new Gen (TipoGen.SEXUAL,ADN.MACHO,Gen.MAS,true,Gen.DOMINANTE);
@@ -57,17 +60,38 @@ public class ADN {
 		if(dieta == HERBIVORO) {
 			diet = new Gen (TipoGen.ALIMENTACION,0,Gen.MIX,true,Gen.DOMINANTE);
 			eficiencia_kcal = new Gen (TipoGen.EFICIENCIA_KCAL,0.3f,Gen.MIX,true,Gen.DOMINANTE);
+			Random r = new Random();
+			float v = 0.1f;
+			if(r.nextInt(2) == 0) {
+				v = 0.2f;
+			}
+			vel = new Gen(TipoGen.VELOCIDAD,v,Gen.MIX,true,Gen.DOMINANTE);
+			crecimiento = new Gen(TipoGen.CRECIMIENTO,0.01f,Gen.MIX,true,Gen.DOMINANTE);
+		}
+		else if(dieta == OMNIVORO) {
+			diet = new Gen (TipoGen.ALIMENTACION,0.5f,Gen.MIX,true,Gen.DOMINANTE);
+			eficiencia_kcal = new Gen (TipoGen.EFICIENCIA_KCAL,0.2f,Gen.MIX,true,Gen.DOMINANTE);
+			Random r = new Random();
+			float v = 0.1f;
+			if(r.nextInt(2) == 0) {
+				v = 0.2f;
+			}
+			vel = new Gen(TipoGen.VELOCIDAD,v,Gen.MIX,true,Gen.DOMINANTE);
+			crecimiento = new Gen(TipoGen.CRECIMIENTO,0.003f,Gen.MIX,true,Gen.DOMINANTE);
 		}
 		else {
 			diet = new Gen (TipoGen.ALIMENTACION,1,Gen.MIX,true,Gen.DOMINANTE);
-			eficiencia_kcal = new Gen (TipoGen.EFICIENCIA_KCAL,0.1f,Gen.MIX,true,Gen.DOMINANTE);
+			eficiencia_kcal = new Gen (TipoGen.EFICIENCIA_KCAL,0.2f,Gen.MIX,true,Gen.DOMINANTE);
+			vel = new Gen(TipoGen.VELOCIDAD,0.2f,Gen.MIX,true,Gen.DOMINANTE);
+			crecimiento = new Gen(TipoGen.CRECIMIENTO,0.003f,Gen.MIX,true,Gen.DOMINANTE);
 		}
 			
 		Gen[][] nuevoADN= {
 			{new Gen(TipoGen.SEXUAL,Gen.FEM,Gen.FEM,true,Gen.DOMINANTE),sex}
 			,{diet,diet}
 			,{eficiencia_kcal,eficiencia_kcal}
-			,{new Gen(TipoGen.CRECIMIENTO,0.005f,Gen.MIX,true,Gen.DOMINANTE), new Gen(TipoGen.CRECIMIENTO,0.005f,Gen.MIX,true,Gen.DOMINANTE)}
+			,{vel,vel}
+			,{crecimiento,crecimiento}
 			,{new Gen(TipoGen.CRECIMIENTO,0.001f,Gen.MAS,true,Gen.DOMINANTE), new Gen(TipoGen.CRECIMIENTO,0.001f,Gen.MAS,true,Gen.DOMINANTE)}
 			,{new Gen(TipoGen.MADUREZ_SEXUAL,0.15f,Gen.MIX,true,Gen.DOMINANTE),new Gen(TipoGen.MADUREZ_SEXUAL,0.15f,Gen.MIX,true,Gen.DOMINANTE)}
 			,{new Gen(TipoGen.METABOLISMO,0.002f,Gen.MIX,true,Gen.DOMINANTE), new Gen(TipoGen.METABOLISMO,0.002f,Gen.MIX,true,Gen.DOMINANTE)}
@@ -75,6 +99,15 @@ public class ADN {
 			,{new Gen(TipoGen.ETAPA_CRECIMIENTO,0.2f,Gen.MIX,true,Gen.DOMINANTE), new Gen(TipoGen.ETAPA_CRECIMIENTO,0.2f,Gen.MIX,true,Gen.DOMINANTE)}
 			,{new Gen(TipoGen.VISION,0.3f,Gen.MIX,true,Gen.DOMINANTE),new Gen(TipoGen.VISION,0.3f,Gen.MIX,true,Gen.DOMINANTE)}
 			,{new Gen(TipoGen.PARTO,0.1f,Gen.MIX,true,Gen.DOMINANTE),new Gen(TipoGen.PARTO,0.1f,Gen.MIX,true,Gen.DOMINANTE)}
+			,{null,null}//ADN relleno, para sustituir
+			,{null,null}
+			,{null,null}
+			,{null,null}
+			,{null,null}
+			,{null,null}
+			,{null,null}
+			,{null,null}
+			
 		};	
 		return new ADN(nuevoADN);
 	}
@@ -102,9 +135,11 @@ public class ADN {
 		for(int i = 0 ; i < adn.length ; i++) {
 			genA = adn[i][0];
 			genB = adn[i][1];
-				
-			valorA += comprobarGen(genA,tipoGen);
-			valorB += comprobarGen(genB,tipoGen);
+			
+			if(genA != null && genB != null ) {
+				valorA += comprobarGen(genA,tipoGen);
+				valorB += comprobarGen(genB,tipoGen);
+			}
 		}
 		return (valorA + valorB) / 2;
 	}

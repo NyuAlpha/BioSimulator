@@ -11,11 +11,23 @@ public class Feto {
 	private double tamanno;
 	private double masa;
 	private double cicloVital;
+	private int tipoAlimentacion;
 	
 	public Feto(ADN adn, BodyAnimal bodyMadre) {
 		this.adn = adn;
 		this.bodyMadre = bodyMadre;
-		tamanno = 2; //tamaño base para todos los fetos
+		if((adn.getValorGen(TipoGen.ALIMENTACION) * TipoGen.ALIMENTACION.getMaximo()) > TipoGen.ALIMENTACION.getMaximo()*0.9 ){
+			tipoAlimentacion = ADN.CARNIVORO;
+			tamanno = 2;
+		}
+		else if((adn.getValorGen(TipoGen.ALIMENTACION) * TipoGen.ALIMENTACION.getMaximo()) > TipoGen.ALIMENTACION.getMaximo()*0.3){
+			tipoAlimentacion = ADN.OMNIVORO;
+			tamanno = 2;
+		}
+		else {
+			tipoAlimentacion = ADN.HERBIVORO;
+			tamanno = 3;
+		}
 		masa = tamanno * tamanno;
 		cicloVital = 0;
 		
@@ -30,9 +42,12 @@ public class Feto {
 		if( cicloVital < adn.getValorGen(TipoGen.PARTO) * TipoGen.PARTO.getMaximo()) {
 			double multiplicador = ((Math.sqrt(masa) / tamanno) - 0.5) * 2; //El crecimiento varía en función de la relación masa/altura
 			double tamannoGanado = tamanno * ((adn.getValorGen(TipoGen.CRECIMIENTO) * TipoGen.CRECIMIENTO.getMaximo()) * multiplicador);
+			tamannoGanado *= 5; //Al ser un feto desarrolla 5 veces más rapido de lo normal
 			tamanno += tamannoGanado;
-			double masaGanada = tamannoGanado * tamannoGanado;
-			masa += masaGanada;
+			//Calcula la masa en funcion al cuadrado de su tamaño, y la diferencia de masa se la quita a la madre
+			double masaPrevia = masa;
+			masa = tamanno * tamanno;
+			double masaGanada = masa - masaPrevia;
 			bodyMadre.setMasa(-masaGanada);
 		}
 		else {
@@ -60,6 +75,13 @@ public class Feto {
 	public double getCicloVital() {
 		return cicloVital;
 	}
+
+
+	public int getTipoAlimentacion() {
+		return tipoAlimentacion;
+	}
+	
+	
 	
 	
 

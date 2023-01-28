@@ -5,7 +5,6 @@ import java.util.ArrayList;
 
 import actores.Actor;
 import actores.Animal;
-import actores.TiposActores;
 
 /**
  * Esta clase representa el mapa donde tendrá lugar la simulación.
@@ -22,10 +21,10 @@ public class Mapa {
 	private BufferedImage imagenMapa;
 	
 	//Anchura y altura del mapa en tiles
-	public static final int ANCHO = 120;
-	public static final int ALTO = 100;
+	public static final int ANCHO = 100;
+	public static final int ALTO = 70;
 	//pixeles de anchura de cada tile
-	public static final int TILE_WIDTH = 7;
+	public static final int TILE_WIDTH = 9;
 	
 	//Capas posibles de las coordenadas de Z
 	public static final int CAPA_BASE = 0;

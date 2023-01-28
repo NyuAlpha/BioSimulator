@@ -38,7 +38,7 @@ public class SimuladorLogica implements Runnable
 		outputConsola = GUI.getOutputConsola();
 		continuar = false;
 		mostrarDatos = false;
-		pausaMilisegundos = 100;
+		pausaMilisegundos = 0;
 
 		
 		inputConsola.addActionListener(new ActionListener() {
@@ -152,9 +152,20 @@ public class SimuladorLogica implements Runnable
 			case "insert":
 				//Solo inserta si la iteracción esta parada para evitar errores
 				if(!continuar) {
-					x = Integer.parseInt(tokens[1]);
-					y = Integer.parseInt(tokens[2]);
-					insertCarnivoro(x,y);
+					String tipo = tokens[1];
+					x = Integer.parseInt(tokens[2]);
+					y = Integer.parseInt(tokens[3]);
+					if(tipo.equals("car")) {
+						insertCarnivoro(x,y);
+					}
+					else if(tipo.equals("omn")) {
+						insertOmnivoro(x,y);
+					}
+					
+					else if(tipo.equals("her")) {
+						insertHerbivoro(x,y);
+					}
+
 					actualizarMapa();
 				}
 				else {
@@ -168,13 +179,22 @@ public class SimuladorLogica implements Runnable
 	}
 	
 	private void insertCarnivoro(int x, int y) {
-		new Animal(mapa,new Coordenadas(x,y,Mapa.CAPA_ANIMAL),ADN.crearADNAnimal(ADN.MACHO,ADN.CARNIVORO),3);
+		new Animal(mapa,new Coordenadas(x,y,Mapa.CAPA_ANIMAL),ADN.crearADNAnimal(ADN.MACHO,ADN.CARNIVORO),5);
 	}
+	
+	private void insertOmnivoro(int x, int y) {
+		new Animal(mapa,new Coordenadas(x,y,Mapa.CAPA_ANIMAL),ADN.crearADNAnimal(ADN.MACHO,ADN.OMNIVORO),5);
+	}
+	
+	private void insertHerbivoro(int x, int y) {
+		new Animal(mapa,new Coordenadas(x,y,Mapa.CAPA_ANIMAL),ADN.crearADNAnimal(ADN.HEMBRA,ADN.HERBIVORO),5);
+	}
+	
 	
 	private void crearActores() {
 		
-		new Animal(mapa,new Coordenadas(11,20,Mapa.CAPA_ANIMAL),ADN.crearADNAnimal(ADN.HEMBRA,ADN.HERBIVORO),3);
-		new Animal(mapa,new Coordenadas(20,30,Mapa.CAPA_ANIMAL),ADN.crearADNAnimal(ADN.MACHO,ADN.HERBIVORO ),3);
+		new Animal(mapa,new Coordenadas(11,20,Mapa.CAPA_ANIMAL),ADN.crearADNAnimal(ADN.HEMBRA,ADN.HERBIVORO),5);
+		new Animal(mapa,new Coordenadas(20,30,Mapa.CAPA_ANIMAL),ADN.crearADNAnimal(ADN.MACHO,ADN.HERBIVORO ),5);
 		new Vegetal(mapa,new Coordenadas(16,25,Mapa.CAPA_VEGETAL),ADN.crearADNVegetal());
 		new Vegetal(mapa,new Coordenadas(16,40,Mapa.CAPA_VEGETAL),ADN.crearADNVegetal());
 		new Vegetal(mapa,new Coordenadas(17,25,Mapa.CAPA_VEGETAL),ADN.crearADNVegetal());

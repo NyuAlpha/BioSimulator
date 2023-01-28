@@ -8,6 +8,7 @@ import biología.BodyAnimal;
 import biología.BodyVegetal;
 import graficos.Coordenadas;
 import graficos.Mapa;
+import graficos.TiposActores;
 
 public class Vegetal extends Actor {
 
@@ -23,7 +24,7 @@ public class Vegetal extends Actor {
 
 	@Override
 	public void actuar() {
-		if(random.nextInt(100) < 3) {
+		if(random.nextInt(100) < 5) {
 			reproducirse();
 		}
 		body.metabolismo();

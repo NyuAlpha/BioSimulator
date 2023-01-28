@@ -6,7 +6,7 @@ public class BodyVegetal extends Body{
 
 	public BodyVegetal(ADN adn,Actor actor) {
 		super(adn,actor);
-		setTamanno(1);
+		setTamanno(2);
 	}
 
 	public void metabolismo() {

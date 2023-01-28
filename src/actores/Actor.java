@@ -6,6 +6,7 @@ import biología.Body;
 import biología.TipoGen;
 import graficos.Coordenadas;
 import graficos.Mapa;
+import graficos.TiposActores;
 
 public abstract class Actor {
 	

@@ -25,6 +25,7 @@ public class BodyAnimal extends Body{
 
 	private int tipoAlimentacion;
 	private int libido;
+	private int velocidad;
 	
 	public BodyAnimal(ADN adn,Actor actor) {
 		super(adn,actor);
@@ -36,16 +37,20 @@ public class BodyAnimal extends Body{
 		if(sexo == ADN.HEMBRA) {
 			utero = new Utero(this);
 		}
-		if((adn.getValorGen(TipoGen.ALIMENTACION) * TipoGen.ALIMENTACION.getMaximo()) < TipoGen.ALIMENTACION.getMaximo()/2 ) {
-			tipoAlimentacion = ADN.HERBIVORO;
+		if((adn.getValorGen(TipoGen.ALIMENTACION) * TipoGen.ALIMENTACION.getMaximo()) > TipoGen.ALIMENTACION.getMaximo()*0.9 ){
+			tipoAlimentacion = ADN.CARNIVORO;
+		}
+		else if((adn.getValorGen(TipoGen.ALIMENTACION) * TipoGen.ALIMENTACION.getMaximo()) > TipoGen.ALIMENTACION.getMaximo()*0.3){
+			tipoAlimentacion = ADN.OMNIVORO;
 		}
 		else {
-			tipoAlimentacion = ADN.CARNIVORO;
+			tipoAlimentacion = ADN.HERBIVORO;
 		}
 		eficiencia_kcal = (adn.getValorGen(TipoGen.EFICIENCIA_KCAL) * TipoGen.EFICIENCIA_KCAL.getMaximo());
 		fertil = false;
 		libido = BodyAnimal.SIN_CELO;
 		encinta = false;
+		velocidad = (int) (adn.getValorGen(TipoGen.VELOCIDAD) * TipoGen.VELOCIDAD.getMaximo() + 0.1);
 	}
 	
 	public BodyAnimal(Feto feto,Actor actor) {
@@ -60,16 +65,12 @@ public class BodyAnimal extends Body{
 		if(sexo == ADN.HEMBRA) {
 			utero = new Utero(this);
 		}
-		if((adn.getValorGen(TipoGen.ALIMENTACION) * TipoGen.ALIMENTACION.getMaximo()) < TipoGen.ALIMENTACION.getMaximo()/2 ) {
-			tipoAlimentacion = ADN.HERBIVORO;
-		}
-		else {
-			tipoAlimentacion = ADN.CARNIVORO;
-		}
+		tipoAlimentacion = feto.getTipoAlimentacion();
 		eficiencia_kcal = (adn.getValorGen(TipoGen.EFICIENCIA_KCAL) * TipoGen.EFICIENCIA_KCAL.getMaximo());
 		fertil = false;
 		libido = BodyAnimal.SIN_CELO;
 		encinta = false;
+		velocidad = (int) (adn.getValorGen(TipoGen.VELOCIDAD) * TipoGen.VELOCIDAD.getMaximo() + 0.1);
 	}
 
 	public void metabolismo() {
@@ -89,10 +90,10 @@ public class BodyAnimal extends Body{
 	}
 	
 	private void calcularHambre() {
-		if(this.getRelMasaAltura() < 0.8) {
+		if(this.getRelMasaAltura() < 0.6) {
 			hambre= BodyAnimal.MUY_HAMBRIENTO;
 		}
-		else if((Math.sqrt(masa) / tamanno) < 1) {
+		else if((Math.sqrt(masa) / tamanno) < 0.9) {
 			hambre= BodyAnimal.HAMBRIENTO;
 		}
 		else{
@@ -173,6 +174,10 @@ public class BodyAnimal extends Body{
 	
 	public boolean getEncinta() {
 		return encinta;
+	}
+	
+	public int getVelocidad() {
+		return velocidad;
 	}
 	
 }
