@@ -1,4 +1,4 @@
-package biología;
+package biologia;
 
 import actores.Feto;
 

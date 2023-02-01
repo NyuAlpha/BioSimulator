@@ -11,6 +11,7 @@ public class Main {
 		Mapa mapa = new Mapa();
 		SimuladorGUI GUI = new SimuladorGUI(mapa.getImagenMapa());
 		SimuladorLogica simulador = new SimuladorLogica(GUI,mapa);
+		GUI.setSimulador(simulador);
 		
 	}
 

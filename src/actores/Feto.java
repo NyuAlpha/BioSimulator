@@ -1,8 +1,8 @@
 package actores;
 
-import biología.ADN;
-import biología.BodyAnimal;
-import biología.TipoGen;
+import biologia.ADN;
+import biologia.BodyAnimal;
+import biologia.TipoGen;
 
 public class Feto {
 
@@ -11,23 +11,11 @@ public class Feto {
 	private double tamanno;
 	private double masa;
 	private double cicloVital;
-	private int tipoAlimentacion;
 	
 	public Feto(ADN adn, BodyAnimal bodyMadre) {
 		this.adn = adn;
 		this.bodyMadre = bodyMadre;
-		if((adn.getValorGen(TipoGen.ALIMENTACION) * TipoGen.ALIMENTACION.getMaximo()) > TipoGen.ALIMENTACION.getMaximo()*0.9 ){
-			tipoAlimentacion = ADN.CARNIVORO;
-			tamanno = 2;
-		}
-		else if((adn.getValorGen(TipoGen.ALIMENTACION) * TipoGen.ALIMENTACION.getMaximo()) > TipoGen.ALIMENTACION.getMaximo()*0.3){
-			tipoAlimentacion = ADN.OMNIVORO;
-			tamanno = 2;
-		}
-		else {
-			tipoAlimentacion = ADN.HERBIVORO;
-			tamanno = 3;
-		}
+		tamanno = 1;
 		masa = tamanno * tamanno;
 		cicloVital = 0;
 		
@@ -75,14 +63,5 @@ public class Feto {
 	public double getCicloVital() {
 		return cicloVital;
 	}
-
-
-	public int getTipoAlimentacion() {
-		return tipoAlimentacion;
-	}
-	
-	
-	
-	
 
 }

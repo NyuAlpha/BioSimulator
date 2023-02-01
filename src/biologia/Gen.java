@@ -1,4 +1,4 @@
-package biología;
+package biologia;
 
 public class Gen {
 

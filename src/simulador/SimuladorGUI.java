@@ -33,6 +33,7 @@ public class SimuladorGUI extends JFrame{
 	private JTextField inputConsola;
 	private PanelSimulacion panelSimulacion;
 	private JScrollPane scrollPaneOutput;
+	private SimuladorLogica simulador;
 	
 	/** Crea una GUI para el simulador
 	 * @param imagenMapa - la imagen del mapa que va a ser dibujada en el simulador
@@ -40,7 +41,7 @@ public class SimuladorGUI extends JFrame{
 	public SimuladorGUI(BufferedImage imagenMapa) {
 		
 
-		
+		this.simulador = simulador;
 		JMenuBar menuBar = new JMenuBar();
 		JMenu menuAyuda = new JMenu("Ayuda ");
 		JMenuItem menuComandos = new JMenuItem("Lista de comandos");
@@ -85,7 +86,7 @@ public class SimuladorGUI extends JFrame{
 		inputConsola.setFont(new Font(Font.DIALOG_INPUT,Font.BOLD,15));
 		inputConsola.setCaretColor(Color.WHITE);
 		inputConsola.setBorder(null);
-
+		
 		scrollPaneOutput = new JScrollPane(outputConsola);
 		scrollPaneOutput.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 		scrollPaneOutput.setBorder(null);
@@ -173,6 +174,12 @@ public class SimuladorGUI extends JFrame{
 		return outputConsola;
 	}
 	
+
+	public void setSimulador(SimuladorLogica simulador) {
+		this.simulador = simulador;
+		panelSimulacion.setSimulador(simulador);
+	}
+	
 	public void redibujar() {
 
 		//scrollPaneOutput.getVerticalScrollBar().setValue(scrollPaneOutput.getVerticalScrollBar().getMaximum());
@@ -190,6 +197,7 @@ class PanelSimulacion extends JPanel implements MouseListener{
 	
 	private BufferedImage imagenMapa;
 	private JTextArea outputConsola;
+	private SimuladorLogica simulador;
 
 	/**
 	 * @param imagenMapa la imagen de la simulación
@@ -197,7 +205,8 @@ class PanelSimulacion extends JPanel implements MouseListener{
 	public PanelSimulacion (BufferedImage imagenMapa, JTextArea outputConsola) {
 		this.imagenMapa = imagenMapa;
 		this.outputConsola = outputConsola;
-		this.setPreferredSize(new Dimension( imagenMapa.getWidth() + 9, imagenMapa.getHeight() + 40));
+		this.simulador = simulador;
+		this.setPreferredSize(new Dimension( imagenMapa.getWidth() + 8, imagenMapa.getHeight() + 39));
 		this.addMouseListener(this);
 	}
 	
@@ -210,7 +219,10 @@ class PanelSimulacion extends JPanel implements MouseListener{
 	@Override
 	public void mouseClicked(MouseEvent e) {
 		// TODO Auto-generated method stub
-		outputConsola.append( "\n Coordenada seleccionada -> " + e.getX()/Mapa.TILE_WIDTH + "-" + e.getY()/Mapa.TILE_WIDTH);
+		int x = e.getX()/Mapa.TILE_WIDTH;
+		int y = e.getY()/Mapa.TILE_WIDTH;
+		outputConsola.append( "\n Coordenada seleccionada -> " + x + "-" + y);
+		simulador.setCoordenadaAnimalSeleccionada(x,y);
 	}
 
 	@Override
@@ -236,4 +248,10 @@ class PanelSimulacion extends JPanel implements MouseListener{
 		// TODO Auto-generated method stub
 		
 	}
+
+	public void setSimulador(SimuladorLogica simulador) {
+		this.simulador = simulador;
+	}
+	
+	
 }

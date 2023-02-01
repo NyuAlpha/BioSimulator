@@ -12,10 +12,10 @@ import javax.swing.JTextField;
 import actores.Actor;
 import actores.Animal;
 import actores.Vegetal;
-import biología.ADN;
-import biología.Body;
-import biología.BodyAnimal;
-import biología.BodyVegetal;
+import biologia.ADN;
+import biologia.Body;
+import biologia.BodyAnimal;
+import biologia.BodyVegetal;
 import graficos.Coordenadas;
 import graficos.Mapa;
 
@@ -29,6 +29,7 @@ public class SimuladorLogica implements Runnable
 	private boolean continuar;
 	private boolean mostrarDatos;
 	private int pausaMilisegundos;
+	private Coordenadas coordenadaAnimalSeleccionada;
 
 	
 	public SimuladorLogica(SimuladorGUI GUI, Mapa mapa) {
@@ -39,6 +40,7 @@ public class SimuladorLogica implements Runnable
 		continuar = false;
 		mostrarDatos = false;
 		pausaMilisegundos = 0;
+		coordenadaAnimalSeleccionada = new Coordenadas(0,0,Mapa.CAPA_ANIMAL);
 
 		
 		inputConsola.addActionListener(new ActionListener() {
@@ -82,12 +84,13 @@ public class SimuladorLogica implements Runnable
 			}
 		}
 		Random random = new Random();
-		int x = random.nextInt(Mapa.ANCHO);
-		int y = random.nextInt(Mapa.ALTO);
-		if(mapa.isLibre(x, y, Mapa.CAPA_VEGETAL)) {
-			new Vegetal(mapa,new Coordenadas(x,y,Mapa.CAPA_VEGETAL),ADN.crearADNVegetal());
+		if(random.nextInt(4) == 0) {
+			int x = random.nextInt(Mapa.ANCHO);
+			int y = random.nextInt(Mapa.ALTO);
+			if(mapa.isLibre(x, y, Mapa.CAPA_VEGETAL)) {
+				new Vegetal(mapa,new Coordenadas(x,y,Mapa.CAPA_VEGETAL),ADN.crearADNVegetal());
+			}
 		}
-		
 		actualizarMapa();
 		outputConsola.append("\n Fin de iteración nº " + ++iteracion +"  Pobl A/V = " + medidorAnimales +"|"+ medidorVegetales);
 	}
@@ -146,26 +149,16 @@ public class SimuladorLogica implements Runnable
 				int x = Integer.parseInt(tokens[1]);
 				int y = Integer.parseInt(tokens[2]);
 				int z = Integer.parseInt(tokens[3]);
-				mapa.getActor(x,y,z).setMarcar();
+				Actor actor = mapa.getActor(x,y,z);
+				if(actor.isVivo())
+					actor.setMarcar();
 				actualizarMapa();
 				break;
-			case "insert":
+			case "add":
 				//Solo inserta si la iteracción esta parada para evitar errores
 				if(!continuar) {
-					String tipo = tokens[1];
-					x = Integer.parseInt(tokens[2]);
-					y = Integer.parseInt(tokens[3]);
-					if(tipo.equals("car")) {
-						insertCarnivoro(x,y);
-					}
-					else if(tipo.equals("omn")) {
-						insertOmnivoro(x,y);
-					}
-					
-					else if(tipo.equals("her")) {
-						insertHerbivoro(x,y);
-					}
-
+					char c = tokens[1].charAt(0);
+					insert(c,coordenadaAnimalSeleccionada);
 					actualizarMapa();
 				}
 				else {
@@ -178,23 +171,41 @@ public class SimuladorLogica implements Runnable
 		}
 	}
 	
-	private void insertCarnivoro(int x, int y) {
-		new Animal(mapa,new Coordenadas(x,y,Mapa.CAPA_ANIMAL),ADN.crearADNAnimal(ADN.MACHO,ADN.CARNIVORO),5);
+	private void insert(char c, Coordenadas coordenadas) {
+		ADN adnM = null;
+		ADN adnH = null;
+		int tamanno = 0;
+		if(c == 'c') {
+			adnM = ADN.crearADNAnimal(BodyAnimal.MACHO,Animal.DEPREDADOR);
+			adnH = ADN.crearADNAnimal(BodyAnimal.HEMBRA,Animal.DEPREDADOR);
+			tamanno = 11;
+		}
+		else if(c == 'o') {
+			adnM = ADN.crearADNAnimal(BodyAnimal.MACHO,Animal.HUMANO);
+			adnH = ADN.crearADNAnimal(BodyAnimal.HEMBRA,Animal.HUMANO);
+			tamanno = 7;
+		}
+		else if(c == 'h') {
+			adnM = ADN.crearADNAnimal(BodyAnimal.MACHO,Animal.VEGETARIANO);
+			adnH = ADN.crearADNAnimal(BodyAnimal.HEMBRA,Animal.VEGETARIANO);
+			tamanno = 5;
+		}
+		if (adnM == null){
+			outputConsola.append("\n especie incorrecta");
+		}
+		else {
+			Coordenadas coordenadasH = new Coordenadas(coordenadas.getX()-1,coordenadas.getY(),coordenadas.getZ());
+			new Animal(mapa,coordenadas,adnM,tamanno);
+			new Animal(mapa,coordenadasH,adnH,tamanno);
+		}
 	}
-	
-	private void insertOmnivoro(int x, int y) {
-		new Animal(mapa,new Coordenadas(x,y,Mapa.CAPA_ANIMAL),ADN.crearADNAnimal(ADN.MACHO,ADN.OMNIVORO),5);
-	}
-	
-	private void insertHerbivoro(int x, int y) {
-		new Animal(mapa,new Coordenadas(x,y,Mapa.CAPA_ANIMAL),ADN.crearADNAnimal(ADN.HEMBRA,ADN.HERBIVORO),5);
-	}
+
 	
 	
 	private void crearActores() {
 		
-		new Animal(mapa,new Coordenadas(11,20,Mapa.CAPA_ANIMAL),ADN.crearADNAnimal(ADN.HEMBRA,ADN.HERBIVORO),5);
-		new Animal(mapa,new Coordenadas(20,30,Mapa.CAPA_ANIMAL),ADN.crearADNAnimal(ADN.MACHO,ADN.HERBIVORO ),5);
+		new Animal(mapa,new Coordenadas(3,3,Mapa.CAPA_ANIMAL),ADN.crearADNAnimal(BodyAnimal.HEMBRA,Animal.VEGETARIANO),5);
+		new Animal(mapa,new Coordenadas(4,4,Mapa.CAPA_ANIMAL),ADN.crearADNAnimal(BodyAnimal.MACHO,Animal.VEGETARIANO ),5);
 		new Vegetal(mapa,new Coordenadas(16,25,Mapa.CAPA_VEGETAL),ADN.crearADNVegetal());
 		new Vegetal(mapa,new Coordenadas(16,40,Mapa.CAPA_VEGETAL),ADN.crearADNVegetal());
 		new Vegetal(mapa,new Coordenadas(17,25,Mapa.CAPA_VEGETAL),ADN.crearADNVegetal());
@@ -219,4 +230,10 @@ public class SimuladorLogica implements Runnable
 		crearActores();
 		actualizarMapa();
 	}
+
+	//Selecciona una coordenada, por defecto la animal
+	public void setCoordenadaAnimalSeleccionada(int x, int y) {
+		this.coordenadaAnimalSeleccionada = new Coordenadas(x,y,Mapa.CAPA_ANIMAL);
+	}
+	
 }

@@ -1,4 +1,4 @@
-package biología;
+package biologia;
 
 import actores.Actor;
 
@@ -10,7 +10,7 @@ public class Body {
 	//Variables biológicas generales
 	protected double masa;
 	protected double tamanno;
-	protected double cicloVital;
+	protected double edad;
 	protected boolean adulto; //cuando deja de crecer será true
 	
 	protected final int TECHO_VITAL = TipoGen.ETAPA_CRECIMIENTO.getMaximo();
@@ -22,7 +22,7 @@ public class Body {
 	public Body( ADN adn,Actor actor) {
 		this.adn = adn;
 		this.actor = actor;
-		cicloVital = 0;
+		edad = 0;
 		adulto = false;
 	}
 	
@@ -34,7 +34,7 @@ public class Body {
 			double tamannoGanado = tamanno * ((adn.getValorGen(TipoGen.CRECIMIENTO) * TipoGen.CRECIMIENTO.getMaximo()) * multiplicador);
 			tamanno += tamannoGanado;
 			//Comprueba si ya no puede crecer y entonces lo convierte en adulto
-			if( ! (cicloVital < (TipoGen.ETAPA_CRECIMIENTO.getMaximo() * adn.getValorGen(TipoGen.ETAPA_CRECIMIENTO)))) {
+			if( ! (edad < (TipoGen.ETAPA_CRECIMIENTO.getMaximo() * adn.getValorGen(TipoGen.ETAPA_CRECIMIENTO)))) {
 				adulto = true;
 			}
 		}
@@ -43,14 +43,14 @@ public class Body {
 	
 	private void comprobarCicloVital() {
 		//envejece un poco
-		cicloVital += adn.getValorGen(TipoGen.ENVEJECIMIENTO) * TipoGen.ENVEJECIMIENTO.getMaximo();
+		edad += adn.getValorGen(TipoGen.ENVEJECIMIENTO) * TipoGen.ENVEJECIMIENTO.getMaximo();
 		//Si llega al final de su ciclo vital morirá
-		if(cicloVital > TECHO_VITAL) {
+		if(edad > TECHO_VITAL) {
 			actor.morir();
 		}
 	}
 	
-	protected double getRelMasaAltura() {
+	public double getRelMasaAltura() {
 		return (Math.sqrt(masa) / tamanno);
 	}
 
@@ -71,8 +71,12 @@ public class Body {
 		masa += sumador;
 	}
 	
-	public double getCicloVital() {
-		return cicloVital;
+	public double getEdad() {
+		return edad;
+	}
+
+	public void setEdad(double edad) {
+		this.edad = edad;
 	}
 
 	public ADN getAdn() {

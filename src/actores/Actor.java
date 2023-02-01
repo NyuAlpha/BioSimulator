@@ -2,8 +2,8 @@ package actores;
 
 import java.util.Random;
 
-import biología.Body;
-import biología.TipoGen;
+import biologia.Body;
+import biologia.TipoGen;
 import graficos.Coordenadas;
 import graficos.Mapa;
 import graficos.TiposActores;
@@ -15,7 +15,13 @@ public abstract class Actor {
 	protected Coordenadas coordenadas;
 	protected Random random;
 	
+	public static final int PLANTA = 0;
+	public static final int VEGETARIANO = 0;
+	public static final int HUMANO = 1;
+	public static final int DEPREDADOR = 2;
+	
 	//Variables biológicas 
+	protected int especie;
 	protected double cicloVital;
 	protected final int TECHO_VITAL = TipoGen.ETAPA_CRECIMIENTO.getMaximo();
 	protected boolean isVivo; // no quitar

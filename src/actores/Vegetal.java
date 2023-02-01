@@ -3,9 +3,9 @@ package actores;
 import java.util.ArrayList;
 import java.util.Random;
 
-import biología.ADN;
-import biología.BodyAnimal;
-import biología.BodyVegetal;
+import biologia.ADN;
+import biologia.BodyAnimal;
+import biologia.BodyVegetal;
 import graficos.Coordenadas;
 import graficos.Mapa;
 import graficos.TiposActores;
@@ -17,6 +17,7 @@ public class Vegetal extends Actor {
 	public Vegetal(Mapa mapa, Coordenadas coordenadas, ADN adn) {
 		super(mapa, coordenadas);
 		body = new BodyVegetal(adn,this);
+		especie = Actor.PLANTA;
 		colorAsociado = TiposActores.CESPED.getColorRGB();
 		margenAsociado = 0;
 		mapa.putActor(this,coordenadas);
@@ -24,7 +25,7 @@ public class Vegetal extends Actor {
 
 	@Override
 	public void actuar() {
-		if(random.nextInt(100) < 5) {
+		if(random.nextInt(300) < 1) {
 			reproducirse();
 		}
 		body.metabolismo();
@@ -58,7 +59,7 @@ public class Vegetal extends Actor {
 	}
 	
 	public String toString() {
-		return String.format("\n m:%.1f/t:%.1f e:%d",body.getMasa(),body.getTamanno(),(int)body.getCicloVital());
+		return String.format("\n %s m:%.1f/t:%.1f e:%d",coordenadas,body.getMasa(),body.getTamanno(),(int)body.getEdad());
 	}
 
 }

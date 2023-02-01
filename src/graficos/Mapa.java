@@ -21,8 +21,8 @@ public class Mapa {
 	private BufferedImage imagenMapa;
 	
 	//Anchura y altura del mapa en tiles
-	public static final int ANCHO = 100;
-	public static final int ALTO = 70;
+	public static final int ANCHO = 90;
+	public static final int ALTO = 60;
 	//pixeles de anchura de cada tile
 	public static final int TILE_WIDTH = 9;
 	
@@ -64,18 +64,13 @@ public class Mapa {
 		return false;
 	}
 	
-	public void moverActor(Actor actor, Coordenadas coordenadasViejas , Coordenadas coordenadasNuevas , int posZ) {
-		campo[coordenadasViejas.getX()][coordenadasViejas.getY()][posZ] = null;
-		campo[coordenadasNuevas.getX()][coordenadasNuevas.getY()][posZ] = actor;
-	}
-	
-	public void moverActor(Actor actor,int posicionX ,int posicionY) {
+	public void moverActorA(Actor actor,int posicionX ,int posicionY) {
 		int posZ = actor.getCoordenadas().getZ();
 		campo[actor.getCoordenadas().getX()][actor.getCoordenadas().getY()][posZ] = null;
 		campo[posicionX][posicionY][posZ] = actor;
 	}
 	
-	public void moverActorA(Actor actor,int direccionX ,int direccionY) {
+	public void moverActorHacia(Actor actor,int direccionX ,int direccionY) {
 		int posX = actor.getCoordenadas().getX();
 		int posY = actor.getCoordenadas().getY();
 		int posZ = actor.getCoordenadas().getZ();

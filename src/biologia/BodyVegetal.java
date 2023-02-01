@@ -1,4 +1,4 @@
-package biología;
+package biologia;
 
 import actores.Actor;
 
@@ -11,7 +11,7 @@ public class BodyVegetal extends Body{
 
 	public void metabolismo() {
 		
-		if(cicloVital < (TipoGen.ETAPA_CRECIMIENTO.getMaximo() * adn.getValorGen(TipoGen.ETAPA_CRECIMIENTO))) {
+		if(edad < (TipoGen.ETAPA_CRECIMIENTO.getMaximo() * adn.getValorGen(TipoGen.ETAPA_CRECIMIENTO))) {
 			//Metabolismo vegetal actuando sumando peso en funcion de la masa, a más masa más producción
 			float TasaCrecimiento = (adn.getValorGen(TipoGen.CRECIMIENTO) * TipoGen.CRECIMIENTO.getMaximo());
 			masa += masa * TasaCrecimiento;
