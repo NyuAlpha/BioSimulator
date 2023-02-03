@@ -3,6 +3,7 @@ package simulador;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Random;
 
@@ -66,31 +67,29 @@ public class SimuladorLogica implements Runnable
 	private synchronized void iterar() {
 		int medidorAnimales = 0;
 		int medidorVegetales = 0;
+		//Aquí se añaden los animales marcados
+		HashSet<Actor> marcados = new HashSet<>();
 		Iterator <Actor> it =mapa.getListaActores().iterator();
 		while(it.hasNext()) {
 			Actor actor = it.next();
 			actor.actuar();
-
 			if(actor instanceof Animal) {
 				medidorAnimales++;
 				if(mostrarDatos) {
-					outputConsola.append(actor.toString());
+					marcados.add(actor);
 				}
 			}
 			else {medidorVegetales++;}
 			
 			if(actor.getMarcar() && !mostrarDatos) {
-				outputConsola.append(actor.toString());
+				marcados.add(actor);
 			}
 		}
-		Random random = new Random();
-		if(random.nextInt(4) == 0) {
-			int x = random.nextInt(Mapa.ANCHO);
-			int y = random.nextInt(Mapa.ALTO);
-			if(mapa.isLibre(x, y, Mapa.CAPA_VEGETAL)) {
-				new Vegetal(mapa,new Coordenadas(x,y,Mapa.CAPA_VEGETAL),ADN.crearADNVegetal());
-			}
+		
+		for(Actor actor : marcados) {
+			outputConsola.append(actor.toString());
 		}
+		
 		actualizarMapa();
 		outputConsola.append("\n Fin de iteración nº " + ++iteracion +"  Pobl A/V = " + medidorAnimales +"|"+ medidorVegetales);
 	}
@@ -200,22 +199,47 @@ public class SimuladorLogica implements Runnable
 		}
 	}
 
-	
-	
 	private void crearActores() {
 		
-		new Animal(mapa,new Coordenadas(3,3,Mapa.CAPA_ANIMAL),ADN.crearADNAnimal(BodyAnimal.HEMBRA,Animal.VEGETARIANO),5);
-		new Animal(mapa,new Coordenadas(4,4,Mapa.CAPA_ANIMAL),ADN.crearADNAnimal(BodyAnimal.MACHO,Animal.VEGETARIANO ),5);
-		new Vegetal(mapa,new Coordenadas(16,25,Mapa.CAPA_VEGETAL),ADN.crearADNVegetal());
-		new Vegetal(mapa,new Coordenadas(16,40,Mapa.CAPA_VEGETAL),ADN.crearADNVegetal());
-		new Vegetal(mapa,new Coordenadas(17,25,Mapa.CAPA_VEGETAL),ADN.crearADNVegetal());
-		new Vegetal(mapa,new Coordenadas(18,40,Mapa.CAPA_VEGETAL),ADN.crearADNVegetal());
-		new Vegetal(mapa,new Coordenadas(19,28,Mapa.CAPA_VEGETAL),ADN.crearADNVegetal());
-		new Vegetal(mapa,new Coordenadas(20,40,Mapa.CAPA_VEGETAL),ADN.crearADNVegetal());
-		new Vegetal(mapa,new Coordenadas(40,55,Mapa.CAPA_VEGETAL),ADN.crearADNVegetal());
-		new Vegetal(mapa,new Coordenadas(30,40,Mapa.CAPA_VEGETAL),ADN.crearADNVegetal());
-		new Vegetal(mapa,new Coordenadas(35,28,Mapa.CAPA_VEGETAL),ADN.crearADNVegetal());
-		new Vegetal(mapa,new Coordenadas(25,40,Mapa.CAPA_VEGETAL),ADN.crearADNVegetal());
+		//Debe ser siempre par para cada especie
+		final int numeroVegetales = 1200;
+		final int numeroHerbivoros = 60;
+		final int numeroCarnivoros = 4;
+		final int numeroOmnivoros = 0;
+		
+		Random random = new Random();
+		for (int i = 0; i < numeroVegetales; i++) {
+			int x = random.nextInt(Mapa.ANCHO);
+			int y = random.nextInt(Mapa.ALTO);
+			if(mapa.isLibre(x, y, Mapa.CAPA_VEGETAL)) {
+				new Vegetal(mapa,new Coordenadas(x,y,Mapa.CAPA_VEGETAL),ADN.crearADNVegetal(),2);
+			}
+		}
+		crearAnimales(numeroHerbivoros,Actor.VEGETARIANO,6);
+		crearAnimales(numeroCarnivoros,Actor.DEPREDADOR,10);
+		crearAnimales(numeroOmnivoros,Actor.HUMANO,6);
+	}
+		
+	private void crearAnimales(int numeroIndividuos,int especie, int tamanno) {
+		
+		Random random = new Random();
+		int x;
+		int y;
+		for (int i = 0; i < numeroIndividuos; i+=2) { //
+			for(int sexo = 0; sexo<= BodyAnimal.MACHO ; sexo++) { //itera de macho a hembra, que es el valor 1
+				do {
+					x = random.nextInt(Mapa.ANCHO);
+					y = random.nextInt(Mapa.ALTO);
+				}
+				while(!isLibre(x,y,Mapa.CAPA_ANIMAL));
+				int tamannoFinal = tamanno + sexo;
+				new Animal(mapa,new Coordenadas(x,y,Mapa.CAPA_ANIMAL),ADN.crearADNAnimal(sexo,especie),tamanno);
+			}
+		}
+	}
+	
+	private boolean isLibre(int x, int y , int capa) {
+		return mapa.isLibre(x, y, capa);
 	}
 	
 	private void actualizarMapa() {

@@ -30,7 +30,7 @@ public class Feto {
 		if( cicloVital < adn.getValorGen(TipoGen.PARTO) * TipoGen.PARTO.getMaximo()) {
 			double multiplicador = ((Math.sqrt(masa) / tamanno) - 0.5) * 2; //El crecimiento varía en función de la relación masa/altura
 			double tamannoGanado = tamanno * ((adn.getValorGen(TipoGen.CRECIMIENTO) * TipoGen.CRECIMIENTO.getMaximo()) * multiplicador);
-			tamannoGanado *= 5; //Al ser un feto desarrolla 5 veces más rapido de lo normal
+			tamannoGanado *= bodyMadre.getTamanno(); //Al ser un feto desarrolla más rapido de lo normal
 			tamanno += tamannoGanado;
 			//Calcula la masa en funcion al cuadrado de su tamaño, y la diferencia de masa se la quita a la madre
 			double masaPrevia = masa;

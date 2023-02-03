@@ -22,7 +22,6 @@ public abstract class Actor {
 	
 	//Variables biológicas 
 	protected int especie;
-	protected double cicloVital;
 	protected final int TECHO_VITAL = TipoGen.ETAPA_CRECIMIENTO.getMaximo();
 	protected boolean isVivo; // no quitar
 	
@@ -54,14 +53,6 @@ public abstract class Actor {
 		return coordenadas;
 	}
 	
-	protected void metabolismo() {
-		//Si llega al final de su ciclo vital morirá
-		if(cicloVital > TECHO_VITAL) {
-			this.morir();
-		}
-	}
-	
-	
 	public void setMarcar() {
 		marcar = !marcar;
 		if(marcar) {
@@ -82,5 +73,8 @@ public abstract class Actor {
 	}
 	
 	public abstract void actuar();
+
+
+	protected abstract String getDataShort();
 	
 }

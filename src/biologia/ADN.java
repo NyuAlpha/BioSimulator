@@ -44,7 +44,7 @@ public class ADN {
 	public static ADN crearADNAnimal(int sexo,int especie) {
 		
 		//Genes diferenciales de sexo y dieta
-		Gen sex,espe,diet,eficiencia_kcal,vel,crecimiento;
+		Gen sex,espe,diet,eficiencia_kcal,vel,crecimiento,lactancia;
 		
 		if(sexo == BodyAnimal.MACHO)
 			sex = new Gen (TipoGen.SEXUAL,BodyAnimal.MACHO,Gen.MAS,true,Gen.DOMINANTE);
@@ -56,15 +56,17 @@ public class ADN {
 			espe = new Gen (TipoGen.ESPECIE,0,Gen.MIX,true,Gen.DOMINANTE); //0 herbivoros
 			diet = new Gen (TipoGen.ALIMENTACION,0,Gen.MIX,true,Gen.DOMINANTE);
 			eficiencia_kcal = new Gen (TipoGen.EFICIENCIA_KCAL,0.3f,Gen.MIX,true,Gen.DOMINANTE);
-			vel = new Gen(TipoGen.VELOCIDAD,0.1f,Gen.MIX,true,Gen.DOMINANTE);
-			crecimiento = new Gen(TipoGen.CRECIMIENTO,0.0025f,Gen.MIX,true,Gen.DOMINANTE);
+			vel = new Gen(TipoGen.VELOCIDAD,0.2f,Gen.MIX,true,Gen.DOMINANTE);
+			crecimiento = new Gen(TipoGen.CRECIMIENTO,0.0030f,Gen.MIX,true,Gen.DOMINANTE);
+			lactancia = new Gen(TipoGen.LACTANCIA,0.15f,Gen.MIX,true,Gen.DOMINANTE);
 		}
 		else if(especie == Animal.HUMANO) {
 			espe = new Gen (TipoGen.ESPECIE,1,Gen.MIX,true,Gen.DOMINANTE); //1 omnívoros
 			diet = new Gen (TipoGen.ALIMENTACION,0.5f,Gen.MIX,true,Gen.DOMINANTE);
 			eficiencia_kcal = new Gen (TipoGen.EFICIENCIA_KCAL,0.2f,Gen.MIX,true,Gen.DOMINANTE);
-			vel = new Gen(TipoGen.VELOCIDAD,0.1f,Gen.MIX,true,Gen.DOMINANTE);
+			vel = new Gen(TipoGen.VELOCIDAD,0.2f,Gen.MIX,true,Gen.DOMINANTE);
 			crecimiento = new Gen(TipoGen.CRECIMIENTO,0.002f,Gen.MIX,true,Gen.DOMINANTE);
+			lactancia = new Gen(TipoGen.LACTANCIA,0.25f,Gen.MIX,true,Gen.DOMINANTE);
 		}
 		else {
 			espe = new Gen (TipoGen.ESPECIE,2,Gen.MIX,true,Gen.DOMINANTE); //2 carnívoros
@@ -72,6 +74,7 @@ public class ADN {
 			eficiencia_kcal = new Gen (TipoGen.EFICIENCIA_KCAL,0.2f,Gen.MIX,true,Gen.DOMINANTE);
 			vel = new Gen(TipoGen.VELOCIDAD,0.3f,Gen.MIX,true,Gen.DOMINANTE);
 			crecimiento = new Gen(TipoGen.CRECIMIENTO,0.002f,Gen.MIX,true,Gen.DOMINANTE);
+			lactancia = new Gen(TipoGen.LACTANCIA,0.25f,Gen.MIX,true,Gen.DOMINANTE);
 		}
 	
 		Gen[][] nuevoADN= {
@@ -81,13 +84,14 @@ public class ADN {
 			,{eficiencia_kcal,eficiencia_kcal}
 			,{vel,vel}
 			,{crecimiento,crecimiento}
+			,{lactancia,lactancia}
 			//,{new Gen(TipoGen.CRECIMIENTO,0.0001f,Gen.MAS,true,Gen.DOMINANTE), new Gen(TipoGen.CRECIMIENTO,0.0001f,Gen.MAS,true,Gen.DOMINANTE)}
-			,{new Gen(TipoGen.MADUREZ_SEXUAL,0.2f,Gen.MIX,true,Gen.DOMINANTE),new Gen(TipoGen.MADUREZ_SEXUAL,0.2f,Gen.MIX,true,Gen.DOMINANTE)}
+			,{new Gen(TipoGen.MADUREZ_SEXUAL,0.3f,Gen.MIX,true,Gen.DOMINANTE),new Gen(TipoGen.MADUREZ_SEXUAL,0.3f,Gen.MIX,true,Gen.DOMINANTE)}
 			,{new Gen(TipoGen.METABOLISMO,0.002f,Gen.MIX,true,Gen.DOMINANTE), new Gen(TipoGen.METABOLISMO,0.002f,Gen.MIX,true,Gen.DOMINANTE)}
 			,{new Gen(TipoGen.ENVEJECIMIENTO,0.0005f,Gen.MIX,true,Gen.DOMINANTE), new Gen(TipoGen.ENVEJECIMIENTO,0.0005f,Gen.MIX,true,Gen.DOMINANTE)}
 			,{new Gen(TipoGen.ETAPA_CRECIMIENTO,0.3f,Gen.MIX,true,Gen.DOMINANTE), new Gen(TipoGen.ETAPA_CRECIMIENTO,0.3f,Gen.MIX,true,Gen.DOMINANTE)}
 			,{new Gen(TipoGen.VISION,0.15f,Gen.MIX,true,Gen.DOMINANTE),new Gen(TipoGen.VISION,0.15f,Gen.MIX,true,Gen.DOMINANTE)}
-			,{new Gen(TipoGen.PARTO,0.05f,Gen.MIX,true,Gen.DOMINANTE),new Gen(TipoGen.PARTO,0.05f,Gen.MIX,true,Gen.DOMINANTE)}
+			,{new Gen(TipoGen.PARTO,0.02f,Gen.MIX,true,Gen.DOMINANTE),new Gen(TipoGen.PARTO,0.02f,Gen.MIX,true,Gen.DOMINANTE)}
 			,{new Gen(TipoGen.FUERZA,0.5f,Gen.MIX,true,Gen.DOMINANTE),new Gen(TipoGen.FUERZA,0.5f,Gen.MIX,true,Gen.DOMINANTE)}
 			,{null,null}//ADN relleno, para sustituir
 			,{null,null}

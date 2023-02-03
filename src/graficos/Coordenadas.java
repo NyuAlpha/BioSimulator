@@ -25,7 +25,7 @@ public class Coordenadas {
 	}
 	
 	public String toString() {
-		return x + "-" + y + "-" + z;
+		return x + "-" + y;
 	}
 	
 	public double calcularDistancia(Coordenadas coordenadas) {

@@ -1,7 +1,7 @@
 package graficos;
 
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
+import java.util.HashSet;
 
 import actores.Actor;
 import actores.Animal;
@@ -16,13 +16,13 @@ public class Mapa {
 	//Array donde están contenidos todos los actores del mapa
 	private  Actor [][][] campo;
 	//Lista de todos los actores del mapa
-	private ArrayList<Actor> actores;
+	private HashSet<Actor> actores;
 	//Donde se dibuja el mapa y todos sus actores
 	private BufferedImage imagenMapa;
 	
 	//Anchura y altura del mapa en tiles
-	public static final int ANCHO = 90;
-	public static final int ALTO = 60;
+	public static final int ANCHO = 110;
+	public static final int ALTO = 80;
 	//pixeles de anchura de cada tile
 	public static final int TILE_WIDTH = 9;
 	
@@ -91,7 +91,7 @@ public class Mapa {
 	/*
 	 * Devuelve la lista de actores que hay en el mapa
 	 */
-	public ArrayList<Actor> getListaActores(){
+	public HashSet<Actor> getListaActores(){
 		return actores;
 	}
 
@@ -136,7 +136,7 @@ public class Mapa {
 	 * Actualiza el array de actores que hay en el mapa
 	 */
 	public void actualizarListas() {
-		actores = new ArrayList<>();
+		actores = new HashSet<>();
 
 		for(int x = 0 ; x < ANCHO ; x++) {
 			for(int y = 0 ; y < ALTO ; y++) {

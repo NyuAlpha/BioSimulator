@@ -15,6 +15,8 @@ import graficos.TiposActores;
 public class Animal extends Actor {
 	
 	private Actor objetivo;
+	private Animal madre;
+	private Animal cria;
 	private HashSet<Animal> parejas;
 	private HashSet<Animal> presas; 
 	private HashSet<Vegetal> pasto;
@@ -36,23 +38,23 @@ public class Animal extends Actor {
 
     //=========================================
 
-	//Constructor de reproduccion, solo usable desde una instancia de tipo animal
-	private Animal(Mapa mapa, Coordenadas coordenadas,Feto feto) {
-		
+	//Cuando nace un bebé
+	private Animal(Mapa mapa, Coordenadas coordenadas,Feto feto,Animal madre) {
 		super(mapa, coordenadas);
 		body = new BodyAnimal(feto,this);
 		especie = (int)(body.getEspecie() + 0.1); //al ser un float se le aplica un margen para evitar malos redondeos
+		this.madre = madre;
 		iniciarVariablesComunes();
 	}
 	
-	//Constructor inicial
+	//Animales prefabricados
 	public Animal(Mapa mapa, Coordenadas coordenadas,ADN adn,double tamanno) {
-		
 		super(mapa, coordenadas);
 		body = new BodyAnimal(adn,this);
 		body.setTamanno(tamanno);
-		body.setEdad(30);
+		body.setEdad(31);
 		especie = (int)(body.getEspecie() + 0.1); //al ser un float se le aplica un margen para evitar malos redondeos
+		madre = null;
 		iniciarVariablesComunes();
 	}
 	
@@ -62,6 +64,7 @@ public class Animal extends Actor {
 		coordenadaObjetiva = null;
 		
 		objetivo = null;
+		cria = null;
 		estado = Estado.NEUTRO;
 		movimiento = true;
 	}
@@ -101,30 +104,7 @@ public class Animal extends Actor {
 		}
 	}
 		
-	private void mover() {
-		if(movimiento) {
-			comprobarEntorno();
-			if(!entornoLibre.isEmpty()) {
-				Coordenadas coordenadasNuevas = entornoLibre.get(random.nextInt(entornoLibre.size()));
-				mapa.moverActorA(this, coordenadasNuevas.getX(),coordenadasNuevas.getY());
-				coordenadas = coordenadasNuevas;
-			}
-		}
-	}
-	
-	private void moverA(int x, int y) {
-		
-		if( !(x < 0 || x >= Mapa.ANCHO || y < 0 || y >= Mapa.ALTO)) {
-			if(mapa.isLibre(x, y, coordenadas.getZ())) {						
-				mapa.moverActorA(this,x,y);
-				coordenadas = new Coordenadas(x,y,coordenadas.getZ());
-			}
-			else 
-				mover();
-		}
-		else
-			mover();
-	}
+
 	
 	private void perseguir(Coordenadas coordenadaObjetivo) {
 			//Calcula las coordenadas hacia la que debe moverse para acercarse al objetivo y si esta
@@ -156,7 +136,7 @@ public class Animal extends Actor {
 		comprobarEntorno();
 		if(!entornoLibre.isEmpty()) {
 			Coordenadas coordenadasLibres = entornoLibre.get(random.nextInt(entornoLibre.size()));
-			new Animal(mapa,coordenadasLibres,feto);
+			cria = new Animal(mapa,coordenadasLibres,feto,this);
 		}
 	}
 
@@ -185,8 +165,14 @@ public class Animal extends Actor {
 	private void actoVoluntario() {
 			switch(estado){
 				case NEUTRO:
-					mover();
-					if(!comprobarPeligro()) {//huida, lucha o neutro
+					if(body.isLactante()) {
+						if(comprobarMadre())
+							rondarMadre();
+					}
+					else
+						mover();
+					
+					if(!comprobarPeligro()) {//huida, lucha,protección o neutro
 						if(!comprobarHambre()){//hambre o neutro
 							comprobarLibido(); // celo o neutro
 						} 
@@ -194,17 +180,10 @@ public class Animal extends Actor {
 					break;
 				case HAMBRE:
 					mover();
-					if(body.getTipoAlimentacion() != BodyAnimal.HERBIVORO) {
-						if(!comprobarPeligroLuchaCaza())
-							buscarPresas();
-					}
-					else {
-						if(!comprobarPeligro())
-							buscarVegetal();
-					}//huida, lucha, pastoreo, caza o hambre
+					gestionarHambre();
 					break;
 				case CAZA:
-					if(comprobarEstado()) {//huida o caza pero no asigna objetivo
+					if(comprobarSalud()) {//huida o caza pero no asigna objetivo
 					//if(!comprobarPeligroDeCazador()) {//huida, lucha o caza
 						if(conseguirPresa())//HAMBRE  solo si murió el objetivo
 							comer(); // come y pasa a neutro
@@ -219,9 +198,17 @@ public class Animal extends Actor {
 				case HUIDA:
 					controlarHuida(); //Neutro o huida
 					break;
+				case PROTECCION:
+					comprobarPeligro();//huida, lucha,protección o neutro, gestiona todo en las crias
+					break;
 				case LUCHA:
-					if(!comprobarPeligroLuchaCaza()) {//huida, lucha o no FALLO EN LUCHA O NO
-						conseguirOponente();
+					if(!comprobarPeligroLuchaCaza()) {//huida o lucha
+						if(conseguirOponente()) { //neutro o lucha
+							if(especie != Actor.VEGETARIANO)
+								comer(); // neutro y anula el objetivo
+							else
+								matar(); // neutro y anula el objetivo
+						}
 					}
 					break;
 				case CELO:
@@ -237,7 +224,7 @@ public class Animal extends Actor {
 						}
 					}
 					break;
-				case REPRODUCCION:
+				case COPULA:
 					if(!comprobarPeligro()) {//huida, lucha o reproduccion
 						aparearse();
 					}
@@ -262,10 +249,45 @@ public class Animal extends Actor {
 		return false;
 	}
 	
+
+	private void gestionarHambre() {
+		if(body.isLactante()) {
+			if(!comprobarPeligro())//huida, protección o hambre
+				if(comprobarMadre()) {
+					if(perseguirMadre()) {
+						mamar();//Neutro
+					}
+				}
+				else
+					mover();
+		}
+		else {
+			if(body.getTipoAlimentacion() != BodyAnimal.HERBIVORO) {
+				if(!comprobarPeligroLuchaCaza())
+					buscarPresas();
+			}
+			else {
+				if(!comprobarPeligro())
+					buscarVegetal();
+			}//huida, lucha, pastoreo, caza o hambre
+		}
+	}
+	
 	//Cambia a celo o nada
 	private void comprobarLibido() {
-		if(body.getLibido() == BodyAnimal.CELO)
+		if(body.getLibido() == BodyAnimal.CELO && cria==null)
 			estado = Estado.CELO;
+	}
+	
+	//Comprueba si tiene madre y si esta viva, además la cambia a null si esta muerta
+	private boolean comprobarMadre() {
+		if(madre != null) {
+			if(madre.isVivo())
+				return true;
+			else
+				madre = null;
+		}
+		return false;
 	}
 	
 	//Busca alimento, devuelve true y lo fija cuando lo encuentra
@@ -288,7 +310,6 @@ public class Animal extends Actor {
 		}
 		//Si encontró una presa la fija como objetivo y se pone en modo caza
 		if(elegido != null) {
-			body.setAgresividad(BodyAnimal.AGRESIVO);
 			objetivo = elegido;
 			estado = Estado.CAZA;
 			return true;
@@ -423,10 +444,9 @@ public class Animal extends Actor {
 	
 	
 	//Solo usado en un depredador, si no está muy herido sigue cazando pase lo que pase
-	private boolean comprobarEstado() {
+	private boolean comprobarSalud() {
 		if(body.getSalud() < BodyAnimal.HERIDO) {
 			estado = Estado.HUIDA;
-			body.setAgresividad(BodyAnimal.MIEDO);
 			return false;
 		}
 		return true;
@@ -441,44 +461,67 @@ public class Animal extends Actor {
 		double peligrosidadAlta = 0.8; //una peligrosidad de 2 es una amenaza severa 
 		double mayorPeligrosidad = peligrosidad;
 		for(Animal animal : amenazas) {
-			double distancia = coordenadas.calcularDistancia(animal.getCoordenadas());
-			if(distancia < radioAmenaza) {
-				//Comprueba el objetivo del otro animal, si es el mismo aumenta la peligrosidad
-				Actor objetivoActor = animal.getObjetivo();
-				if(objetivoActor==this) {
-					peligrosidadTotal ++;
-				}
-				//La peligrosidad se mide en base a todas las amenazas
-				peligrosidad =  calcularPeligrosidad(animal);
-				peligrosidadTotal += peligrosidad;
-				
-				//compara cual es más peligroso
-				if(peligrosidad > mayorPeligrosidad) {
-					mayorPeligrosidad = peligrosidad;
-					mayorAmenaza = animal; 
+			if(animal.isVivo()) {
+				double distancia = coordenadas.calcularDistancia(animal.getCoordenadas());
+				if(distancia < radioAmenaza) {
+					//Comprueba el objetivo del otro animal, si es el mismo aumenta la peligrosidad
+					Actor objetivoActor = animal.getObjetivo();
+					if(objetivoActor==this) {
+						peligrosidadTotal ++;
+					}
+					//La peligrosidad se mide en base a todas las amenazas
+					peligrosidad =  calcularPeligrosidad(animal);
+					peligrosidadTotal += peligrosidad;
+					
+					//compara cual es más peligroso
+					if(peligrosidad > mayorPeligrosidad) {
+						mayorPeligrosidad = peligrosidad;
+						mayorAmenaza = animal; 
+					}
 				}
 			}
 		}
-		//El estado del animal varia en funcion de la peligrosidad total
-		//Además en un futuro cercano aquí se añadira una función para huir de todas las amenazas.
-		if(peligrosidadTotal >= peligrosidadAlta) {
-			body.setAgresividad(BodyAnimal.MIEDO);
-			estado = Estado.HUIDA;
-			objetivo = mayorAmenaza;
+		//Si hay peligrosidad	
+		if (peligrosidadTotal >= peligrosidadAlta/2){
+			//Si es lactante buscará a su madre o huirá si no la tiene
+			if(body.isLactante()) {
+				if(comprobarMadre()) {
+					estado = Estado.PROTECCION;
+					perseguirMadre();
+				}
+				else {
+					pasarAHuida(mayorAmenaza);
+				}
+				return true;
+			}
+			//Si no es una cria  y la peligrosidad es muy alta
+			//Además en un futuro cercano aquí se añadira una función para huir de todas las amenazas.
+			if(peligrosidadTotal >= peligrosidadAlta) {
+				pasarAHuida(mayorAmenaza);
+				return true;
+			}
+			//Si no es lactante pasa a modo lucha,y fija a su objetivo	
+			pasarALucha(mayorAmenaza);
 			return true;
 		}
-		//Si no fué muy alta la peligrosidad se pondrá en modo lucha,y fijará a su objetivo	
-		else if (peligrosidadTotal >= peligrosidadAlta/2){
-			body.setAgresividad(BodyAnimal.AGRESIVO);
-			estado = Estado.LUCHA;
-			objetivo = mayorAmenaza;
-			return true;
-		}
-		//En caso de baja peligrosidad el estado no varia
+		//En caso de baja peligrosidad el estado es neutro
 		else {
-			body.setAgresividad(BodyAnimal.PASIVO);
+			if(estado == Estado.PROTECCION)
+				estado = Estado.NEUTRO;
+
 			return false;
 		}
+	}
+	
+	private void pasarAHuida(Animal amenaza) {
+		estado = Estado.HUIDA;
+		objetivo = amenaza;
+		controlarHuida();
+	}
+	
+	private void pasarALucha(Animal amenaza) {
+		estado = Estado.LUCHA;
+		objetivo = amenaza;
 	}
 	
 	private boolean comprobarPeligroDeCazador(){
@@ -489,37 +532,33 @@ public class Animal extends Actor {
 		double peligrosidadAlta = 0.8; //una peligrosidad de 2 es una amenaza severa 
 		double mayorPeligrosidad = peligrosidad;
 		for(Animal animal : amenazas) {
-			double distancia = coordenadas.calcularDistancia(animal.getCoordenadas());
-			if(distancia < radioAmenaza) {
-				//Comprueba el objetivo del otro animal, si es el mismo aumenta la peligrosidad
-				Actor objetivoActor = animal.getObjetivo();
-				if(objetivoActor==this) {
-					peligrosidadTotal ++;
-				}
-				//La peligrosidad se mide en base a todas las amenazas
-				peligrosidad =  calcularPeligrosidad(animal);
-				peligrosidadTotal += peligrosidad;
-				
-				//compara cual es más peligroso
-				if(peligrosidad > mayorPeligrosidad) {
-					mayorPeligrosidad = peligrosidad;
-					mayorAmenaza = animal; 
+			if(animal.isVivo()) {
+				double distancia = coordenadas.calcularDistancia(animal.getCoordenadas());
+				if(distancia < radioAmenaza) {
+					//Comprueba el objetivo del otro animal, si es el mismo aumenta la peligrosidad
+					Actor objetivoActor = animal.getObjetivo();
+					if(objetivoActor==this) {
+						peligrosidadTotal ++;
+					}
+					//La peligrosidad se mide en base a todas las amenazas
+					peligrosidad =  calcularPeligrosidad(animal);
+					peligrosidadTotal += peligrosidad;
+					
+					//compara cual es más peligroso
+					if(peligrosidad > mayorPeligrosidad) {
+						mayorPeligrosidad = peligrosidad;
+						mayorAmenaza = animal; 
+					}
 				}
 			}
 		}
 		//El estado del animal varia en funcion de la peligrosidad total
 		//Además en un futuro cercano aquí se añadira una función para huir de todas las amenazas.
 		if(peligrosidadTotal >= peligrosidadAlta) {
-			body.setAgresividad(BodyAnimal.MIEDO);
-			estado = Estado.HUIDA;
-			objetivo = mayorAmenaza;
+			pasarAHuida(mayorAmenaza);
 			return true;
 		}
-		//En caso de baja peligrosidad el estado no varia
-		else {
-			body.setAgresividad(BodyAnimal.AGRESIVO);
-			return false;
-		}
+		return false;
 	}
 	
 	private boolean comprobarPeligroLuchaCaza(){
@@ -530,35 +569,31 @@ public class Animal extends Actor {
 		double peligrosidadAlta = 0.8; //una peligrosidad de 2 es una amenaza severa 
 		double mayorPeligrosidad = peligrosidad;
 		for(Animal animal : amenazas) {
-			double distancia = coordenadas.calcularDistancia(animal.getCoordenadas());
-			if(distancia < radioAmenaza) {
-
-				//La peligrosidad se mide en base a todas las amenazas
-				peligrosidad =  calcularPeligrosidad(animal);
-				peligrosidadTotal += peligrosidad;
-				
-				//compara cual es más peligroso
-				if(peligrosidad > mayorPeligrosidad) {
-					mayorPeligrosidad = peligrosidad;
-					mayorAmenaza = animal; 
+			if(animal.isVivo()) {
+				double distancia = coordenadas.calcularDistancia(animal.getCoordenadas());
+				if(distancia < radioAmenaza) {
+	
+					//La peligrosidad se mide en base a todas las amenazas
+					peligrosidad =  calcularPeligrosidad(animal);
+					peligrosidadTotal += peligrosidad;
+					
+					//compara cual es más peligroso
+					if(peligrosidad > mayorPeligrosidad) {
+						mayorPeligrosidad = peligrosidad;
+						mayorAmenaza = animal; 
+					}
 				}
 			}
 		}
 		//El estado del animal varia en funcion de la peligrosidad total
-		//Además en un futuro cercano aquí se añadira una función para huir de todas las amenazas.
+		//Además en un futuro cercano aquí se añadira una función para huir de todas las amenazas con funcion de dirección
 		if(peligrosidadTotal >= peligrosidadAlta) {
-			body.setAgresividad(BodyAnimal.MIEDO);
-			estado = Estado.HUIDA;
-			objetivo = mayorAmenaza;
+			pasarAHuida(mayorAmenaza);
 			return true;
 		}
-		//Si no fué muy alta la peligrosidad sigue luchando o cazando
-		else {
-			return false;
-		}
+		return false;
 	}
 
-	
 	
 	//calcula la peligrosisdad con un algoritmo
 	private double calcularPeligrosidad(Animal animal) {
@@ -582,19 +617,12 @@ public class Animal extends Actor {
 					((Animal)objetivo).setObjetivo(this);//la víctima tiene a este actor como objetivo
 					
 					if (bodyAnimal.getSalud() <= 0) {
-						if(especie != Actor.VEGETARIANO)
-							comer();
-						else
-							matar();
-					
 						return true;
 					}
 					else if(bodyAnimal.getSalud() > BodyAnimal.HERIDO) {
-						bodyAnimal.setAgresividad(BodyAnimal.AGRESIVO);
 						((Animal)objetivo).setEstado(Estado.LUCHA);
 					}
 					else {
-						bodyAnimal.setAgresividad(BodyAnimal.MIEDO);
 						((Animal)objetivo).setEstado(Estado.HUIDA);
 					}
 					return false;
@@ -630,10 +658,10 @@ public class Animal extends Actor {
 							return true;
 						}
 						else if(bodyAnimal.getSalud() > BodyAnimal.HERIDO) {
-							bodyAnimal.setAgresividad(BodyAnimal.AGRESIVO);
+							((Animal)objetivo).setEstado(Estado.LUCHA);
 						}
 						else {
-							bodyAnimal.setAgresividad(BodyAnimal.MIEDO);
+							((Animal)objetivo).setEstado(Estado.DEFENSA);
 						}
 						return false;
 					}
@@ -669,6 +697,40 @@ public class Animal extends Actor {
 			return false;
 		}
 		
+	//se acerca a su madre, si esta al lado devuelve true
+	private boolean perseguirMadre() {
+		int v = 0;//se movera tantas veces como su velocidad
+		while(v < body.getVelocidad()) {
+			if(coordenadas.calcularDistancia(madre.getCoordenadas()) > body.getRadioVision()) {
+				mover();//Si la madre esta muy lejos se mueve al azar
+			}
+			else if(coordenadas.calcularDistancia(madre.getCoordenadas()) > 1.5) {
+				perseguir(madre.getCoordenadas());
+			}
+			else
+				return true;//Cuando la tiene al lado
+			v++;
+		}
+		return false;
+	}
+	
+	private void rondarMadre() {
+		int v = 0;//se movera tantas veces como su velocidad
+		while(v < body.getVelocidad()) {
+				
+			if(coordenadas.calcularDistancia(madre.getCoordenadas()) > body.getRadioVision()) {
+				mover();//Si la madre esta muy lejos se mueve al azar
+			}
+			else if(coordenadas.calcularDistancia(madre.getCoordenadas()) > body.getRadioVision()/4) {
+				perseguir(madre.getCoordenadas());
+			}
+			else {
+				mover();
+			}
+			v++;
+		}
+	}
+		
 	private boolean perseguirPareja() {
 		//Los machos se acercan del todo, la hembra solo se acerca al area de vision del macho, solo el macho inicia el apareamiento
 		if(objetivo.isVivo()) {
@@ -681,7 +743,7 @@ public class Animal extends Actor {
 					}
 					//Al macho no le importa si no es correspondido, intentará aparearse igual
 					else {
-						estado = Estado.REPRODUCCION;
+						estado = Estado.COPULA;
 						return true;
 					}
 					v++;
@@ -702,7 +764,7 @@ public class Animal extends Actor {
 					else{
 						//comprueba si es correspondida
 						if(((Animal)objetivo).getObjetivo() == this) {
-							estado = Estado.REPRODUCCION;
+							estado = Estado.COPULA;
 							return true;					
 						}
 						return false;
@@ -717,6 +779,33 @@ public class Animal extends Actor {
 		return false;
 	}
 	
+	
+	private void mover() {
+		if(movimiento) {
+			comprobarEntorno();
+			if(!entornoLibre.isEmpty()) {
+				Coordenadas coordenadasNuevas = entornoLibre.get(random.nextInt(entornoLibre.size()));
+				mapa.moverActorA(this, coordenadasNuevas.getX(),coordenadasNuevas.getY());
+				coordenadas = coordenadasNuevas;
+			}
+		}
+	}
+	
+	private void moverA(int x, int y) {
+		
+		if( !(x < 0 || x >= Mapa.ANCHO || y < 0 || y >= Mapa.ALTO)) {
+			if(mapa.isLibre(x, y, coordenadas.getZ())) {						
+				mapa.moverActorA(this,x,y);
+				coordenadas = new Coordenadas(x,y,coordenadas.getZ());
+			}
+			else 
+				mover();
+		}
+		else
+			mover();
+	}
+	
+	
 	private void comer() {
 		if(objetivo instanceof Animal) {
 			body.digestion(((Animal) objetivo).getBody());
@@ -729,6 +818,23 @@ public class Animal extends Actor {
 			objetivo = null;
 		}
 		estado = Estado.NEUTRO; //Una vez come pasa a estado neutro
+	}
+	
+	//mama de la madre
+	private void mamar() {
+		//Si la madre no esta muerta de hambre podrá mamar de ella
+		if(madre.getBody().getHambre() != BodyAnimal.MUY_HAMBRIENTO) {
+			double masaLeche = body.getTamanno();//Cantidad equivalente al tamaño
+			madre.getBody().setMasa(-masaLeche);//Le roba masa a la madre
+			body.setMasa(masaLeche);//Se la suma
+			estado = Estado.NEUTRO; //Una vez come pasa a estado neutro
+		}
+	}
+	
+	private void matar() {
+		((Animal)objetivo).morir();
+		objetivo = null;
+		estado = Estado.NEUTRO;
 	}
 	
 	//Comprueba si seguir huyendo o no
@@ -749,6 +855,10 @@ public class Animal extends Actor {
 				v++;
 			}
 		}
+		else {
+			objetivo = null;
+			estado = Estado.NEUTRO;
+		}
 	}
 	
 	//Retorna false si gana la batalla y true si la batalla continua
@@ -756,26 +866,16 @@ public class Animal extends Actor {
 		if(objetivo.isVivo()) {
 				BodyAnimal bodyAnimal = ((Animal)objetivo).getBody();
 				bodyAnimal.infligirDanno(body.calcularAtaque(bodyAnimal.getMasa()));				
-				if (bodyAnimal.getSalud() == 0) {
+				if (bodyAnimal.getSalud() <= 0) {
 					((Animal)objetivo).morir();
 					return false;
 				}
 				else if(bodyAnimal.getSalud() > BodyAnimal.HERIDO) {
-					bodyAnimal.setAgresividad(BodyAnimal.AGRESIVO);
-				}
-				else {
-					bodyAnimal.setAgresividad(BodyAnimal.MIEDO);
 				}
 				return true;
 			}
 		//Si esta muerto termina
 		return false;
-	}
-
-	
-	private void matar() {
-		((Animal)objetivo).morir();
-		objetivo = null;
 	}
 	
 	private boolean isMismoObjetivo(Actor actorObjetivo,HashSet<Animal> listaActores) {
@@ -787,6 +887,22 @@ public class Animal extends Actor {
 		return false;
 	}
 	
+	public void desmadrarse() {
+		if(comprobarMadre())
+			madre.perderCria();
+	}
+	
+	//De momento no es necesario, pero se usará
+	public void perderCria() {
+		cria = null;
+	}
+	
+	public void morir() {
+		//Antes de llamar a la super clase comprueba si tiene madre, si la tiene perderá a su cría
+		if(madre != null)
+			madre.perderCria();
+		super.morir();
+	}
 	
 	
 	public String toString() {
@@ -794,10 +910,57 @@ public class Animal extends Actor {
 		
 		String libido = (body.getLibido()==BodyAnimal.CELO)? "\u2764": ""; //corazón o corazón partido
 		String sexo = (body.getSexo()==BodyAnimal.HEMBRA)? "\u2640": "\u2642";//Hembra y macho
-		String obje = (objetivo != null)? "\n\t"+objetivo.getCoordenadas().toString():"";
-		return String.format("\n %s m:%.0f/t:%.0f e:%d %s %s X:%d"
-							,coordenadas,body.getMasa(),body.getTamanno(),(int)body.getEdad(),sexo,libido,body.getLibido())
-		+ String.format(" hp:%d dt:%d %s %s",body.getSalud(),body.getTipoAlimentacion(),estado.getEstado(),obje);
+		String obje = (objetivo != null)? "\n\t"+objetivo.getDataShort():"";
+		String espec ;
+		String salud;
+		String lactante = (body.isLactante())? "\u2763": "";
+		if(especie == Actor.DEPREDADOR)
+			espec = "\u2694";
+		else if(especie == Actor.HUMANO)
+			espec = "\u262F";
+		else if(especie == Actor.VEGETARIANO)
+			espec = "\u2658";
+		else
+			espec = "\u26B6";
+		
+		if(body.getSalud() > BodyAnimal.HERIDO)
+			salud = "\u2661\u2661";
+		else if(body.getSalud() <= 0)
+			salud = " \u2670";
+		else
+			salud = " \u2661";
+		
+		return String.format("\n   %s %s %.0f/%.0f e:%d %s %s"
+							,espec,coordenadas,body.getTamanno(),body.getMasa(),(int)body.getEdad(),sexo,libido)
+		+ String.format(" %s %s dt:%d %s %s",salud,lactante,body.getTipoAlimentacion(),estado.getEstado(),obje);
+	}
+	
+	public String getDataShort() {
+		
+		String libido = (body.getLibido()==BodyAnimal.CELO)? "\u2764": ""; //corazón o corazón partido
+		String sexo = (body.getSexo()==BodyAnimal.HEMBRA)? "\u2640": "\u2642";//Hembra y macho
+		String espec ;
+		String salud;
+		String lactante = (body.isLactante())? "\u2763": "";
+		if(especie == Actor.DEPREDADOR)
+			espec = "\u2694";
+		else if(especie == Actor.HUMANO)
+			espec = "\u262F";
+		else if(especie == Actor.VEGETARIANO)
+			espec = "\u2658";
+		else
+			espec = "\u26B6";
+		
+		if(body.getSalud() > BodyAnimal.HERIDO)
+			salud = "\u2661\u2661";
+		else if(body.getSalud() <= 0)
+			salud = " \u2670";
+		else
+			salud = " \u2661";
+
+		return String.format("-> %s %s %.0f/%.0f e:%d %s %s"
+							,espec,coordenadas,body.getTamanno(),body.getMasa(),(int)body.getEdad(),sexo,libido)
+		+ String.format(" %s %s dt:%d %s",salud,lactante,body.getTipoAlimentacion(),estado.getEstado());
 	}
 
 	public BodyAnimal getBody() {
@@ -837,6 +1000,6 @@ public class Animal extends Actor {
 		amenazas = new HashSet<>();
 		aliados = new HashSet<>();
 	}
-	
-	
+
+
 }

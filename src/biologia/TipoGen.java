@@ -7,6 +7,7 @@ public enum TipoGen {
 	METABOLISMO(1),
 	CRECIMIENTO(1),
 	ETAPA_CRECIMIENTO(100),
+	LACTANCIA(ETAPA_CRECIMIENTO.getMaximo()),
 	MADUREZ_SEXUAL(ETAPA_CRECIMIENTO.getMaximo()), //El maximo debe coincidir siempre con el límite de crecimiento
 	PARTO(ETAPA_CRECIMIENTO.getMaximo()),      // Como máximo hasta la quinta parte del desarrollo máximo
 	APETITO(100),

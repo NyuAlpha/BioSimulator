@@ -14,9 +14,10 @@ public class Vegetal extends Actor {
 
 	private BodyVegetal body;
 	
-	public Vegetal(Mapa mapa, Coordenadas coordenadas, ADN adn) {
+	public Vegetal(Mapa mapa, Coordenadas coordenadas, ADN adn,double tamanno) {
 		super(mapa, coordenadas);
 		body = new BodyVegetal(adn,this);
+		body.setTamanno(tamanno);
 		especie = Actor.PLANTA;
 		colorAsociado = TiposActores.CESPED.getColorRGB();
 		margenAsociado = 0;
@@ -50,7 +51,7 @@ public class Vegetal extends Actor {
 		}
 		if(!coordenadasLibres.isEmpty()) {
 			Coordenadas coordenadasNuevas = coordenadasLibres.get(random.nextInt(coordenadasLibres.size()));
-			new Vegetal(mapa,coordenadasNuevas,body.getAdn());
+			new Vegetal(mapa,coordenadasNuevas,body.getAdn(),2);
 		}
 	}
 	
@@ -60,6 +61,11 @@ public class Vegetal extends Actor {
 	
 	public String toString() {
 		return String.format("\n %s m:%.1f/t:%.1f e:%d",coordenadas,body.getMasa(),body.getTamanno(),(int)body.getEdad());
+	}
+
+	@Override
+	protected String getDataShort() {
+		return String.format("-> %s m:%.1f/t:%.1f e:%d",coordenadas,body.getMasa(),body.getTamanno(),(int)body.getEdad());
 	}
 
 }

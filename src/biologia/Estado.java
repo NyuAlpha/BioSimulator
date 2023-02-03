@@ -10,7 +10,10 @@ public enum Estado {
 	DEFENSA("defensa"),
 	LUCHA("lucha"),
 	CELO("celo"),
-	REPRODUCCION("reproduccion");
+	COPULA("copula"),
+	PROTECCION("proteccion");
+	//INFANCIA("infancia"),
+	//MATERNIDAD("maternidad");
 	
 	private String estado;
 	

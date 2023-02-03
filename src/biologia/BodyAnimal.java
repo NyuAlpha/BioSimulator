@@ -6,9 +6,7 @@ import actores.Feto;
 
 public class BodyAnimal extends Body{
 
-	
-
-	
+		
 	//Variables de animal
 	private int radioVision;
 	private int hambre;
@@ -17,6 +15,7 @@ public class BodyAnimal extends Body{
 	private double eficiencia_kcal;
 	private boolean fertil; //cuando se haya desarrollado sexualmente
 	private boolean encinta;//Solo será true en hembras preñadas
+	private boolean lactante;//Sera true si esta en lactancia
 
 	public static final int HEMBRA = 0;
 	public static final int MACHO = 1;
@@ -39,11 +38,6 @@ public class BodyAnimal extends Body{
 	public static final int HERIDO = SALUDABLE/2;
 	private int salud;
 	
-	public static final int MIEDO = 0;
-	public static final int PASIVO = 1;
-	public static final int AGRESIVO = 2;
-	private int agresividad;
-	
 	private int velocidad;
 	private double fuerza;//daño base
 	
@@ -58,6 +52,7 @@ public class BodyAnimal extends Body{
 		tamanno = feto.getTamanno();
 		masa = feto.getMasa();
 		edad = feto.getCicloVital();
+		lactante = true;
 		generarComunes();
 	}
 	
@@ -84,7 +79,6 @@ public class BodyAnimal extends Body{
 		encinta = false;
 		velocidad = (int) (adn.getValorGen(TipoGen.VELOCIDAD) * TipoGen.VELOCIDAD.getMaximo() + 0.1);
 		salud = SALUDABLE;
-		agresividad = PASIVO;
 		fuerza = (adn.getValorGen(TipoGen.FUERZA) * TipoGen.FUERZA.getMaximo());
 	}
 	
@@ -94,6 +88,7 @@ public class BodyAnimal extends Body{
 			gestacion();
 		sanar();
 		metabolismo();
+		calcularLactancia();
 		calcularHambre();
 		calcularLibido();
 	}
@@ -149,23 +144,35 @@ public class BodyAnimal extends Body{
 	}
 	
 	private void calcularHambre() {
-		if(this.getRelMasaAltura() < 0.6)
+		if(getRelMasaAltura() < 0.7)
 			hambre= BodyAnimal.MUY_HAMBRIENTO;
-		else if((Math.sqrt(masa) / tamanno) < 0.9)
+		else if(getRelMasaAltura() < 1)
 			hambre= BodyAnimal.HAMBRIENTO;
 		else
 			hambre= BodyAnimal.SIN_HAMBRE;
 	}
 	
 	private void calcularLibido() {
-		//Comprueba si esta en etapa fertil o no
+		//Si no esta en edad fertil comprueba de nuevo si lo está, en caso afirmativo lo vuelve fertil
 		if(!fertil) {
 			if(edad > (TipoGen.MADUREZ_SEXUAL.getMaximo() * adn.getValorGen(TipoGen.MADUREZ_SEXUAL)))
 				fertil = true;
 		}
+		//En caso de ya sea fertil comprobará si esta encinta, si no lo está comprueba la líbido
 		else if(!encinta) {
 			//Si tiene poca hambre
-			libido = (hambre <= BodyAnimal.HAMBRIENTO)?  BodyAnimal.CELO : BodyAnimal.SIN_CELO;
+			libido = (hambre == BodyAnimal.SIN_HAMBRE)?  BodyAnimal.CELO : BodyAnimal.SIN_CELO;
+		}
+	}
+	
+	private void calcularLactancia() {
+		//Si está en lactancia comprueba de nuevo si lo está
+		if(lactante) {
+			//Si ha llegado a una edad no lactante pasa a no serlo
+			if(edad > (TipoGen.LACTANCIA.getMaximo() * adn.getValorGen(TipoGen.LACTANCIA))) {
+				lactante = false;
+				((Animal)actor).desmadrarse();
+			}
 		}
 	}
 	
@@ -219,17 +226,15 @@ public class BodyAnimal extends Body{
 		return salud;
 	}
 	
-	public int getAgresividad() {
-		return agresividad;
-	}
-	
 	public float getEspecie() {
 		return adn.getValorGen(TipoGen.ESPECIE) * TipoGen.ESPECIE.getMaximo();
 	}
 
-	public void setAgresividad(int agresividad) {
-		this.agresividad = agresividad;
+	public boolean isLactante() {
+		return lactante;
 	}
+	
+	
 	
 
 	
